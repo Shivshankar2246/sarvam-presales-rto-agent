@@ -8,29 +8,38 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "node-webhook",
-      "name": "Order Event (Webhook)",
       "type": "n8n-nodes-base.webhook",
-      "typeVersion": 1.1,
-      "position": [-100, 300],
-      "webhookId": "sampark-trigger"
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        -16
+      ],
+      "id": "1153fdd4-53b1-440a-8595-70505c63b76b",
+      "name": "Webhook",
+      "webhookId": "f08e0344-b8d7-4ec3-8e0f-673c7f50da6c"
     },
     {
       "parameters": {
-        "mode": "manual",
-        "includeOtherFields": true,
         "assignments": {
           "assignments": [
-            { "id": "assign-enriched", "name": "enriched", "type": "boolean", "value": true }
+            {
+              "id": "bf69b986-0bb6-4d9b-9648-06dbb4ef79fb",
+              "name": "enriched",
+              "value": true,
+              "type": "boolean"
+            }
           ]
         },
         "options": {}
       },
-      "id": "node-enrich",
-      "name": "Enrich Order Context",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
-      "position": [120, 300]
+      "position": [
+        224,
+        -16
+      ],
+      "id": "fed5c9bd-cfb3-49d6-81f7-4b6a941394ae",
+      "name": "Enrich Order Context"
     },
     {
       "parameters": {
@@ -38,35 +47,125 @@
         "url": "http://localhost:8000/trigger-call",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { \"order\": $json.body.order, \"customer_lines\": $json.body.customer_lines } }}",
+        "jsonBody": "={{ { \"order\": $('Webhook').item.json.body.order, \"customer_lines\": $('Webhook').item.json.body.customer_lines }\n  }}",
         "options": {}
       },
-      "id": "node-callvoice",
-      "name": "Call Voice Agent",
       "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.1,
-      "position": [340, 300],
-      "onError": "continueRegularOutput"
+      "typeVersion": 4.3,
+      "position": [
+        448,
+        -16
+      ],
+      "id": "ab6d63c2-b6fa-4a90-b5bf-ab648f0bccc2",
+      "name": "Call Voice Agent"
     },
     {
       "parameters": {
-        "dataType": "string",
-        "value1": "={{ $json.disposition }}",
         "rules": {
-          "rules": [
-            { "operation": "equal", "value2": "CONVERTED_PREPAID" },
-            { "operation": "equal", "value2": "RESCHEDULED" },
-            { "operation": "equal", "value2": "ADDRESS_FIXED" },
-            { "operation": "equal", "value2": "CANCELLED" }
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "=={{ $json.disposition }}",
+                    "rightValue": "CONVERTED_PREPAID",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "1ba24482-6bd5-4eaf-91d2-955962e703db"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "f6cac432-81c5-4700-9c4c-3e6e50cb346a",
+                    "leftValue": "=={{ $json.disposition }}",
+                    "rightValue": "RESCHEDULED",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "4a1a551b-906d-4650-b76a-b960064be40b",
+                    "leftValue": "=={{ $json.disposition }}",
+                    "rightValue": "ADDRESS_FIXED",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "c681b200-975f-471f-9108-0743eae87d62",
+                    "leftValue": "=={{ $json.disposition }}",
+                    "rightValue": "CANCELLED",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
           ]
         },
-        "fallbackOutput": 4
+        "looseTypeValidation": true,
+        "options": {
+          "fallbackOutput": "extra"
+        }
       },
-      "id": "node-switch",
-      "name": "Route on Disposition",
       "type": "n8n-nodes-base.switch",
-      "typeVersion": 1,
-      "position": [560, 300]
+      "typeVersion": 3.4,
+      "position": [
+        672,
+        -64
+      ],
+      "id": "62c394f7-e883-4f0e-83b6-e6ebfc344e8c",
+      "name": "Route on Disposition"
     },
     {
       "parameters": {
@@ -74,14 +173,17 @@
         "url": "https://webhook.site/your-mock-url",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { \"action\": \"mark_prepaid\", \"order_id\": $('Call Voice Agent').item.json.order_id } }}",
+        "jsonBody": "={\n    \"action\": \"mark_prepaid\",\n    \"order_id\": \"{{ $('Call Voice Agent').item.json.order_id }}\"\n  }",
         "options": {}
       },
-      "id": "node-oms-prepaid",
-      "name": "OMS: mark prepaid",
       "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.1,
-      "position": [820, 60]
+      "typeVersion": 4.3,
+      "position": [
+        896,
+        -400
+      ],
+      "id": "d10b0451-ae0c-46de-9d21-af4f69e3a8d8",
+      "name": "OMS: mark prepaid"
     },
     {
       "parameters": {
@@ -89,14 +191,17 @@
         "url": "https://webhook.site/your-mock-url",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { \"to\": $('Call Voice Agent').item.json.order_id, \"template\": \"prepaid_confirmed\" } }}",
+        "jsonBody": "={\n    \"to\": \"{{ $('Call Voice Agent').item.json.order_id }}\",\n    \"template\": \"prepaid_confirmed\"\n  }",
         "options": {}
       },
-      "id": "node-wa-prepaid",
-      "name": "WhatsApp: payment confirmation",
       "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.1,
-      "position": [1040, 60]
+      "typeVersion": 4.3,
+      "position": [
+        1120,
+        -400
+      ],
+      "id": "9cbeb1f0-6368-49e0-82ec-42c6b23de4e2",
+      "name": "WhatsApp - Payment Confirmation"
     },
     {
       "parameters": {
@@ -104,14 +209,17 @@
         "url": "https://webhook.site/your-mock-url",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { \"action\": \"reschedule\", \"order_id\": $('Call Voice Agent').item.json.order_id, \"slot\": $('Call Voice Agent').item.json.tools_called[0].args.preferred_slot } }}",
+        "jsonBody": "={\n    \"action\": \"reschedule\",                                                   \n    \"order_id\": \"{{ $('Call Voice Agent').item.json.order_id }}\",\n    \"slot\": \"{{ $('Call Voice Agent').item.json.tools_called[0].args.preferred_slot }}\"\n  }",
         "options": {}
       },
-      "id": "node-3pl-resched",
-      "name": "3PL: reschedule",
       "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.1,
-      "position": [820, 200]
+      "typeVersion": 4.3,
+      "position": [
+        1120,
+        -208
+      ],
+      "id": "61f90d5a-230b-4012-a253-59b2a28162b0",
+      "name": "3PL: reschedule"
     },
     {
       "parameters": {
@@ -119,14 +227,17 @@
         "url": "https://webhook.site/your-mock-url",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { \"action\": \"update_address\", \"order_id\": $('Call Voice Agent').item.json.order_id, \"address\": $('Call Voice Agent').item.json.tools_called[0].args.corrected_address, \"landmark\": $('Call Voice Agent').item.json.tools_called[0].args.landmark } }}",
+        "jsonBody": "={\n    \"action\": \"update_address\",\n    \"order_id\": \"{{ $('Call Voice Agent').item.json.order_id }}\",\n    \"address\": \"{{ $('Call Voice Agent').item.json.tools_called[0].args.corrected_address }}\",\n    \"landmark\": \"{{ $('Call Voice Agent').item.json.tools_called[0].args.landmark }}\"\n  }",
         "options": {}
       },
-      "id": "node-oms-addr",
-      "name": "OMS: update address",
       "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.1,
-      "position": [820, 340]
+      "typeVersion": 4.3,
+      "position": [
+        1120,
+        -16
+      ],
+      "id": "9a4d073d-5035-49de-9e4c-ff89f40cabd7",
+      "name": "OMS: update address"
     },
     {
       "parameters": {
@@ -134,14 +245,17 @@
         "url": "https://webhook.site/your-mock-url",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { \"action\": \"cancel_and_hold\", \"order_id\": $('Call Voice Agent').item.json.order_id, \"reason\": $('Call Voice Agent').item.json.tools_called[0].args.reason } }}",
+        "jsonBody": "={\n    \"action\": \"cancel_and_hold\",\n    \"order_id\": \"{{ $('Call Voice Agent').item.json.order_id }}\",\n    \"reason\": \"{{ $('Call Voice Agent').item.json.tools_called[0].args.reason }}\"\n  }",
         "options": {}
       },
-      "id": "node-oms-cancel",
-      "name": "OMS: cancel + 3PL hold",
       "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.1,
-      "position": [820, 480]
+      "typeVersion": 4.3,
+      "position": [
+        1120,
+        176
+      ],
+      "id": "e2f480dc-ee0b-48b1-b498-fb5d72395607",
+      "name": "OMS: cancel + 3PL hold"
     },
     {
       "parameters": {
@@ -149,14 +263,17 @@
         "url": "https://webhook.site/your-mock-url",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { \"channel\": \"#ndr-escalations\", \"text\": \"Manual follow-up needed for \" + $('Call Voice Agent').item.json.order_id + \" (\" + $('Call Voice Agent').item.json.disposition + \")\" } }}",
+        "jsonBody": "={\n    \"channel\": \"#ndr-escalations\",\n    \"text\": \"Manual follow-up needed for order {{ $('Call Voice Agent').item.json.order_id }}, disposition {{\n  $('Call Voice Agent').item.json.disposition }}\"\n  }",
         "options": {}
       },
-      "id": "node-slack",
-      "name": "Slack: human queue",
       "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.1,
-      "position": [820, 620]
+      "typeVersion": 4.3,
+      "position": [
+        1120,
+        368
+      ],
+      "id": "f0096f75-9388-4a97-87c1-b3feb10f2d27",
+      "name": "Slack: human queue"
     },
     {
       "parameters": {
@@ -164,14 +281,17 @@
         "url": "https://webhook.site/your-mock-url",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { \"order_id\": $('Call Voice Agent').item.json.order_id, \"disposition\": $('Call Voice Agent').item.json.disposition, \"language\": $('Call Voice Agent').item.json.language } }}",
+        "jsonBody": "={\n    \"order_id\": \"{{ $('Call Voice Agent').item.json.order_id }}\",\n    \"disposition\": \"{{ $('Call Voice Agent').item.json.disposition }}\",\n    \"language\": \"{{ $('Call Voice Agent').item.json.language }}\"\n  }",
         "options": {}
       },
-      "id": "node-crm",
-      "name": "Log to CRM",
       "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.1,
-      "position": [1280, 340]
+      "typeVersion": 4.3,
+      "position": [
+        1344,
+        -16
+      ],
+      "id": "ba633e9a-562b-473a-ab78-676fbae52881",
+      "name": "Log to CRM"
     },
     {
       "parameters": {
@@ -179,35 +299,172 @@
         "responseBody": "={{ { \"ok\": true, \"disposition\": $('Call Voice Agent').item.json.disposition } }}",
         "options": {}
       },
-      "id": "node-done",
-      "name": "Done",
       "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1,
-      "position": [1500, 340]
+      "typeVersion": 1.5,
+      "position": [
+        1568,
+        -16
+      ],
+      "id": "939fad9f-a90f-4b52-8127-46933a7b4fe7",
+      "name": "Done"
     }
   ],
   "connections": {
-    "Order Event (Webhook)": { "main": [[{ "node": "Enrich Order Context", "type": "main", "index": 0 }]] },
-    "Enrich Order Context": { "main": [[{ "node": "Call Voice Agent", "type": "main", "index": 0 }]] },
-    "Call Voice Agent": { "main": [[{ "node": "Route on Disposition", "type": "main", "index": 0 }]] },
-    "Route on Disposition": {
+    "Webhook": {
       "main": [
-        [{ "node": "OMS: mark prepaid", "type": "main", "index": 0 }],
-        [{ "node": "3PL: reschedule", "type": "main", "index": 0 }],
-        [{ "node": "OMS: update address", "type": "main", "index": 0 }],
-        [{ "node": "OMS: cancel + 3PL hold", "type": "main", "index": 0 }],
-        [{ "node": "Slack: human queue", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Enrich Order Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
-    "OMS: mark prepaid": { "main": [[{ "node": "WhatsApp: payment confirmation", "type": "main", "index": 0 }]] },
-    "WhatsApp: payment confirmation": { "main": [[{ "node": "Log to CRM", "type": "main", "index": 0 }]] },
-    "3PL: reschedule": { "main": [[{ "node": "Log to CRM", "type": "main", "index": 0 }]] },
-    "OMS: update address": { "main": [[{ "node": "Log to CRM", "type": "main", "index": 0 }]] },
-    "OMS: cancel + 3PL hold": { "main": [[{ "node": "Log to CRM", "type": "main", "index": 0 }]] },
-    "Slack: human queue": { "main": [[{ "node": "Log to CRM", "type": "main", "index": 0 }]] },
-    "Log to CRM": { "main": [[{ "node": "Done", "type": "main", "index": 0 }]] }
+    "Enrich Order Context": {
+      "main": [
+        [
+          {
+            "node": "Call Voice Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Voice Agent": {
+      "main": [
+        [
+          {
+            "node": "Route on Disposition",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route on Disposition": {
+      "main": [
+        [
+          {
+            "node": "OMS: mark prepaid",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "3PL: reschedule",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "OMS: update address",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "OMS: cancel + 3PL hold",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Slack: human queue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OMS: mark prepaid": {
+      "main": [
+        [
+          {
+            "node": "WhatsApp - Payment Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp - Payment Confirmation": {
+      "main": [
+        [
+          {
+            "node": "Log to CRM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "3PL: reschedule": {
+      "main": [
+        [
+          {
+            "node": "Log to CRM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OMS: update address": {
+      "main": [
+        [
+          {
+            "node": "Log to CRM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OMS: cancel + 3PL hold": {
+      "main": [
+        [
+          {
+            "node": "Log to CRM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack: human queue": {
+      "main": [
+        [
+          {
+            "node": "Log to CRM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log to CRM": {
+      "main": [
+        [
+          {
+            "node": "Done",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
   },
   "active": false,
-  "settings": {},
-  "version": 1
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "id": "b19hUFFswSaam5UaE-Lhf",
+  "tags": []
 }
