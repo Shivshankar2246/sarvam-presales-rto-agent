@@ -42,8 +42,21 @@ is the deliverable.
    ```
    > If n8n is in Docker and the voice service is on your host, use
    > `http://host.docker.internal:8000` instead of `http://localhost:8000` in the HTTP node.
+   >
+   > **If your n8n is REMOTE (n8n Cloud, or self-hosted on a VPS like Hostinger),** it can't reach
+   > your laptop's `localhost`. Expose the voice service with a tunnel that has **no interstitial
+   > warning page** (Serveo's free warning breaks API calls — avoid it). Cloudflare's quick tunnel
+   > works with no signup:
+   > ```bash
+   > brew install cloudflared
+   > cloudflared tunnel --url http://localhost:8000
+   > ```
+   > Use the printed `https://<random>.trycloudflare.com/trigger-call` as the "Call Voice Agent"
+   > URL. The URL changes each restart, so keep the tunnel running during your demo.
 3. A free **webhook.site** tab open (we'll paste its URL into the mock downstream nodes so you
-   can *see* the fan-out fire). Optional but great for the demo video.
+   can *see* the fan-out fire). Optional but great for the demo video. **Copy the URL with
+   webhook.site's copy icon** — copying it from a chat/doc can paste a `[markdown](link)` that n8n
+   rejects as an invalid URL.
 
 ---
 
@@ -122,7 +135,11 @@ The response body now contains:
    | 2 | `ADDRESS_FIXED` |
    | 3 | `CANCELLED` |
 4. **Fallback Output:** ON (this catches `ESCALATED`, `UNREACHABLE`, `CALLBACK_SCHEDULED`).
-5. Connect: **Call Voice Agent → Route on Disposition**.
+5. **Convert types where required:** turn this toggle **ON**. On newer n8n (v3 Switch / self-hosted
+   2.4+), strict type validation can make a correct-looking string rule silently fail and send
+   everything to Fallback. Turning this on fixes it. (If a rule still won't match, switch its
+   operator from `is equal to` → `contains`, which is more forgiving.)
+6. Connect: **Call Voice Agent → Route on Disposition**.
 
 ---
 
@@ -143,27 +160,49 @@ WhatsApp APIs. For all of them: Method `POST`, Send Body `JSON`.
 > Use this `$('Call Voice Agent').item.json.*` form in EVERY downstream node below (and in
 > Node 10 and Node 11). Don't use the deprecated `$node["..."].json` syntax.
 
-| Node name | Wire from Switch output | JSON body expression |
-|---|---|---|
-| **OMS: mark prepaid** | 0 (CONVERTED_PREPAID) | `={{ { "action":"mark_prepaid", "order_id":$('Call Voice Agent').item.json.order_id } }}` |
-| **WhatsApp: payment confirmation** | after "OMS: mark prepaid" | `={{ { "to":$('Call Voice Agent').item.json.order_id, "template":"prepaid_confirmed" } }}` |
-| **3PL: reschedule** | 1 (RESCHEDULED) | `={{ { "action":"reschedule", "order_id":$('Call Voice Agent').item.json.order_id, "slot":$('Call Voice Agent').item.json.tools_called[0].args.preferred_slot } }}` |
-| **OMS: update address** | 2 (ADDRESS_FIXED) | `={{ { "action":"update_address", "order_id":$('Call Voice Agent').item.json.order_id, "address":$('Call Voice Agent').item.json.tools_called[0].args.corrected_address, "landmark":$('Call Voice Agent').item.json.tools_called[0].args.landmark } }}` |
-| **OMS: cancel + 3PL hold** | 3 (CANCELLED) | `={{ { "action":"cancel_and_hold", "order_id":$('Call Voice Agent').item.json.order_id, "reason":$('Call Voice Agent').item.json.tools_called[0].args.reason } }}` |
-| **Slack: human queue** | fallback (ESCALATED/UNREACHABLE) | `={{ { "channel":"#ndr-escalations", "text":"Manual follow-up needed for " + $('Call Voice Agent').item.json.order_id } }}` |
+> ⚠️ **BODY FORMAT — use literal JSON with `{{ }}` placeholders, NOT a `={{ {...} }}` object
+> expression.** On self-hosted n8n (HTTP node v4.3), an object-expression body throws
+> *"JSON parameter needs to be valid JSON"*. The reliable form: **Body Content Type = JSON**,
+> **Specify Body = Using JSON**, and write real JSON with `{{ }}` inside the quoted values (no
+> leading `=`). Examples below use this form.
 
-> Tip: you only *need* one branch wired to make the demo land (the COD→prepaid path is the money
-> shot). Build that branch fully first, then clone the HTTP node for the others.
+**OMS: mark prepaid** (Switch output 0)
+```json
+{ "action": "mark_prepaid", "order_id": "{{ $('Call Voice Agent').item.json.order_id }}" }
+```
+**WhatsApp: payment confirmation** (chained after OMS: mark prepaid)
+```json
+{ "to": "{{ $('Call Voice Agent').item.json.order_id }}", "template": "prepaid_confirmed" }
+```
+**3PL: reschedule** (Switch output 1)
+```json
+{ "action": "reschedule", "order_id": "{{ $('Call Voice Agent').item.json.order_id }}", "slot": "{{ $('Call Voice Agent').item.json.tools_called[0].args.preferred_slot }}" }
+```
+**OMS: update address** (Switch output 2)
+```json
+{ "action": "update_address", "order_id": "{{ $('Call Voice Agent').item.json.order_id }}", "address": "{{ $('Call Voice Agent').item.json.tools_called[0].args.corrected_address }}", "landmark": "{{ $('Call Voice Agent').item.json.tools_called[0].args.landmark }}" }
+```
+**OMS: cancel + 3PL hold** (Switch output 3)
+```json
+{ "action": "cancel_and_hold", "order_id": "{{ $('Call Voice Agent').item.json.order_id }}", "reason": "{{ $('Call Voice Agent').item.json.tools_called[0].args.reason }}" }
+```
+**Slack: human queue** (Fallback output)
+```json
+{ "channel": "#ndr-escalations", "text": "Manual follow-up needed for order {{ $('Call Voice Agent').item.json.order_id }}, disposition {{ $('Call Voice Agent').item.json.disposition }}" }
+```
+
+> Tip: you only *need* the prepaid branch wired to make the demo land (COD→prepaid is the money
+> shot). Build that fully first, then do the others.
 
 ---
 
 ## Node 10 — HTTP Request: "Log to CRM" (every branch lands here)
 
 1. Add node → **HTTP Request** → rename **`Log to CRM`**.
-2. Method `POST`, URL = your webhook.site URL, Body JSON (node-reference again — `$json` here
-   would be the upstream mock's reply):
-   ```
-   ={{ { "order_id":$('Call Voice Agent').item.json.order_id, "disposition":$('Call Voice Agent').item.json.disposition, "language":$('Call Voice Agent').item.json.language, "logged_at":$now } }}
+2. Method `POST`, URL = your webhook.site URL, Body Content Type **JSON**, literal-JSON form
+   (node-reference again — `$json` here would be the upstream mock's reply):
+   ```json
+   { "order_id": "{{ $('Call Voice Agent').item.json.order_id }}", "disposition": "{{ $('Call Voice Agent').item.json.disposition }}", "language": "{{ $('Call Voice Agent').item.json.language }}" }
    ```
 3. Connect **every** downstream node's output into **Log to CRM**. Many→one is fine here: the
    branches are mutually exclusive, so only the one active path executes — no Merge node needed.
