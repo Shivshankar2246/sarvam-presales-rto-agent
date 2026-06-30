@@ -1,0 +1,16 @@
+{
+  "order": {
+    "order_id": "RVT-51120",
+    "customer_name": "Priya Sharma",
+    "language_code": "hi-IN",
+    "language_name": "Hindi/Hinglish",
+    "item": "Anarkali Dress (Green, M)",
+    "cod_amount": 1799,
+    "address": "Flat 2, Sunshine Apartments, Pune, MH 411014",
+    "status": "NDR_ATTEMPT_FAILED"
+  },
+  "customer_lines": [
+    "Haan, ground floor likha hai but actually second floor hai, blue gate ke saamne.",
+    "Haan bilkul, aaj hi bhej do please."
+  ]
+}

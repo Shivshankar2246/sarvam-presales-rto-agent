@@ -1,0 +1,16 @@
+{
+  "order": {
+    "order_id": "RVT-50934",
+    "customer_name": "Lakshmi Narayanan",
+    "language_code": "ta-IN",
+    "language_name": "Tamil",
+    "item": "Silk Saree (Maroon)",
+    "cod_amount": 2890,
+    "address": "12, Gandhi Street, T. Nagar, Chennai, TN 600017",
+    "status": "OUT_FOR_DELIVERY"
+  },
+  "customer_lines": [
+    "இல்லை, நான் இன்னைக்கு ஊருக்கு போயிட்டேன். நாளைக்குதான் வருவேன்.",
+    "சரி, நாளைக்கு மதியம் ஓகே."
+  ]
+}

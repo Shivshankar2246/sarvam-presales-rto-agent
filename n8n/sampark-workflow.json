@@ -1,0 +1,208 @@
+{
+  "name": "Sampark — Trigger & Resolve",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "sampark-trigger",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "node-webhook",
+      "name": "Order Event (Webhook)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [-100, 300],
+      "webhookId": "sampark-trigger"
+    },
+    {
+      "parameters": {
+        "values": {
+          "boolean": [{ "name": "enriched", "value": true }]
+        },
+        "options": {}
+      },
+      "id": "node-enrich",
+      "name": "Enrich Order Context",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [120, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8000/trigger-call",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"order\": $json.body.order, \"customer_lines\": $json.body.customer_lines } }}",
+        "options": {}
+      },
+      "id": "node-callvoice",
+      "name": "Call Voice Agent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [340, 300]
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.disposition }}",
+        "rules": {
+          "rules": [
+            { "operation": "equal", "value2": "CONVERTED_PREPAID" },
+            { "operation": "equal", "value2": "RESCHEDULED" },
+            { "operation": "equal", "value2": "ADDRESS_FIXED" },
+            { "operation": "equal", "value2": "CANCELLED" }
+          ]
+        },
+        "fallbackOutput": 4
+      },
+      "id": "node-switch",
+      "name": "Route on Disposition",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [560, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://webhook.site/your-mock-url",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"action\": \"mark_prepaid\", \"order_id\": $json.order_id } }}",
+        "options": {}
+      },
+      "id": "node-oms-prepaid",
+      "name": "OMS: mark prepaid",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [820, 60]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://webhook.site/your-mock-url",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"to\": $json.order_id, \"template\": \"prepaid_confirmed\" } }}",
+        "options": {}
+      },
+      "id": "node-wa-prepaid",
+      "name": "WhatsApp: payment confirmation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1040, 60]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://webhook.site/your-mock-url",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"action\": \"reschedule\", \"order_id\": $json.order_id, \"slot\": $json.tools_called[0].args.preferred_slot } }}",
+        "options": {}
+      },
+      "id": "node-3pl-resched",
+      "name": "3PL: reschedule",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [820, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://webhook.site/your-mock-url",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"action\": \"update_address\", \"order_id\": $json.order_id, \"address\": $json.tools_called[0].args.corrected_address, \"landmark\": $json.tools_called[0].args.landmark } }}",
+        "options": {}
+      },
+      "id": "node-oms-addr",
+      "name": "OMS: update address",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [820, 340]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://webhook.site/your-mock-url",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"action\": \"cancel_and_hold\", \"order_id\": $json.order_id, \"reason\": $json.tools_called[0].args.reason } }}",
+        "options": {}
+      },
+      "id": "node-oms-cancel",
+      "name": "OMS: cancel + 3PL hold",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [820, 480]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://webhook.site/your-mock-url",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"channel\": \"#ndr-escalations\", \"text\": \"Manual follow-up needed for \" + $json.order_id + \" (\" + $json.disposition + \")\" } }}",
+        "options": {}
+      },
+      "id": "node-slack",
+      "name": "Slack: human queue",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [820, 620]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://webhook.site/your-mock-url",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"order_id\": $json.order_id, \"disposition\": $json.disposition, \"language\": $json.language } }}",
+        "options": {}
+      },
+      "id": "node-crm",
+      "name": "Log to CRM",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1280, 340]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"ok\": true, \"disposition\": $json.disposition } }}",
+        "options": {}
+      },
+      "id": "node-done",
+      "name": "Done",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1500, 340]
+    }
+  ],
+  "connections": {
+    "Order Event (Webhook)": { "main": [[{ "node": "Enrich Order Context", "type": "main", "index": 0 }]] },
+    "Enrich Order Context": { "main": [[{ "node": "Call Voice Agent", "type": "main", "index": 0 }]] },
+    "Call Voice Agent": { "main": [[{ "node": "Route on Disposition", "type": "main", "index": 0 }]] },
+    "Route on Disposition": {
+      "main": [
+        [{ "node": "OMS: mark prepaid", "type": "main", "index": 0 }],
+        [{ "node": "3PL: reschedule", "type": "main", "index": 0 }],
+        [{ "node": "OMS: update address", "type": "main", "index": 0 }],
+        [{ "node": "OMS: cancel + 3PL hold", "type": "main", "index": 0 }],
+        [{ "node": "Slack: human queue", "type": "main", "index": 0 }]
+      ]
+    },
+    "OMS: mark prepaid": { "main": [[{ "node": "WhatsApp: payment confirmation", "type": "main", "index": 0 }]] },
+    "WhatsApp: payment confirmation": { "main": [[{ "node": "Log to CRM", "type": "main", "index": 0 }]] },
+    "3PL: reschedule": { "main": [[{ "node": "Log to CRM", "type": "main", "index": 0 }]] },
+    "OMS: update address": { "main": [[{ "node": "Log to CRM", "type": "main", "index": 0 }]] },
+    "OMS: cancel + 3PL hold": { "main": [[{ "node": "Log to CRM", "type": "main", "index": 0 }]] },
+    "Slack: human queue": { "main": [[{ "node": "Log to CRM", "type": "main", "index": 0 }]] },
+    "Log to CRM": { "main": [[{ "node": "Done", "type": "main", "index": 0 }]] }
+  },
+  "active": false,
+  "settings": {},
+  "version": 1
+}

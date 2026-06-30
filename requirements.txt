@@ -1,0 +1,16 @@
+# Core (required for text/auto demo + server)
+requests>=2.31
+python-dotenv>=1.0
+openai>=1.40            # used only as an OpenAI-compatible client for Sarvam /v1 chat
+fastapi>=0.110
+uvicorn>=0.29
+pydantic>=2.6
+
+# Voice mode only (live mic + speaker). Optional — text/auto modes don't need these.
+# On macOS you may also need: brew install portaudio
+sounddevice>=0.4.6
+soundfile>=0.12
+numpy>=1.24
+
+# Official Sarvam SDK — optional alternative to the raw-requests client.
+sarvamai>=0.1.28
