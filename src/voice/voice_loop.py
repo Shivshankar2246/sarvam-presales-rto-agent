@@ -34,5 +34,7 @@ def run_voice_call(client, order: dict, max_turns: int = 6) -> dict:
         print(f"🙋 Customer: {customer_text}")
         speak(agent.respond(customer_text))
 
+    if not agent.is_done:
+        agent.finalize()
     print(f"\n✅ Disposition: {agent.disposition}")
     return agent.outcome()

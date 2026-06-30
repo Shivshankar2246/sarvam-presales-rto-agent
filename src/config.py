@@ -47,22 +47,23 @@ class Settings:
 settings = Settings()
 
 
-# Default Bulbul (TTS) voice per language. anushka/abhilash exist on v2 & are safe
-# fallbacks; v3 adds many more (see _research/sarvam-api-reference.md §3).
+# Default Bulbul (TTS) voice per language. These are bulbul:v3 speakers (female, for
+# the "Meera" persona). v2 voices like anushka are NOT valid on v3 — keep these in sync
+# with SARVAM_TTS_MODEL. Full v3 voice list in _research/sarvam-api-reference.md §3.
 DEFAULT_SPEAKER = {
-    "hi-IN": "anushka",
-    "ta-IN": "vidya",
-    "te-IN": "vidya",
-    "bn-IN": "anushka",
-    "kn-IN": "vidya",
-    "ml-IN": "vidya",
-    "mr-IN": "anushka",
-    "gu-IN": "anushka",
-    "pa-IN": "anushka",
-    "od-IN": "anushka",
-    "en-IN": "anushka",
+    "hi-IN": "priya",
+    "ta-IN": "ritu",
+    "te-IN": "ritu",
+    "bn-IN": "neha",
+    "kn-IN": "ritu",
+    "ml-IN": "ritu",
+    "mr-IN": "pooja",
+    "gu-IN": "pooja",
+    "pa-IN": "priya",
+    "od-IN": "neha",
+    "en-IN": "priya",
 }
 
 
 def speaker_for(language_code: str) -> str:
-    return DEFAULT_SPEAKER.get(language_code, "anushka")
+    return DEFAULT_SPEAKER.get(language_code, "priya")

@@ -89,6 +89,10 @@ def run(scenario_name: str, mode: str, speak: bool) -> dict:
         print(f"🤖 Meera: {reply}")
         _maybe_speak(client, reply, lang, speak)
 
+    # End-of-call: ensure a disposition is recorded even if the model chatted without committing.
+    if not agent.is_done:
+        agent.finalize()
+
     outcome = agent.outcome()
     print("\n" + "-" * 72)
     print(f"✅ DISPOSITION: {outcome['disposition']}")

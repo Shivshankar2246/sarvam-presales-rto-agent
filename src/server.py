@@ -68,6 +68,9 @@ def trigger_call(req: TriggerCall) -> dict[str, Any]:
             break
         agent.respond(line)
 
+    if not agent.is_done:
+        agent.finalize()
+
     outcome = agent.outcome()
     # n8n reads `disposition` + `tools_called` to drive the downstream branch.
     return outcome

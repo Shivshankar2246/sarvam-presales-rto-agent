@@ -125,8 +125,16 @@ This surfaces aggregate objection patterns (why orders RTO) and feeds the agent'
 | **Translate** | `mayura:v1` | Normalize transcripts → English for the ops dashboard | One ops team reads dispositions across 10 languages |
 
 `sarvam-m` is **deprecated** and deliberately not used. Chat goes through Sarvam's
-OpenAI-compatible `/v1` endpoint for robust tool-calling. Verified API reference (endpoints,
-schemas, pricing, sources): see the build notes in `_research/` *(kept local; not shipped)*.
+OpenAI-compatible `/v1` endpoint for robust tool-calling.
+
+**Engineering notes (tested against live Sarvam APIs):**
+- **Reliable tool-calling** at `temperature=0` via three guards: a fixed in-language greeting, a
+  *structured-output fallback* (if the model ever emits a tool name as text, it's caught and
+  re-issued as a proper structured call), and an *end-of-call `finalize()`* that forces a
+  disposition with `tool_choice="required"` so every call is classified. Verified 9/9 across the
+  three scenarios.
+- **`bulbul:v3` speakers** (priya/ritu/neha…) — note v2 voices like `anushka` are not valid on v3.
+- **STT** uses `mode=codemix` so Hinglish/Tanglish transcribes faithfully.
 
 ---
 
