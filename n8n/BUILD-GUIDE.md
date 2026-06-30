@@ -99,11 +99,12 @@ in-language Sarvam conversation and returns the **disposition** + **tools_called
 1. Add node → **HTTP Request** → rename **`Call Voice Agent`**.
 2. Set:
    - **Method:** `POST`
-   - **URL:** `http://localhost:8000/trigger-call`  *(or `http://host.docker.internal:8000/...` if n8n is in Docker)*
+   - **URL:** `http://localhost:8000/trigger-call`  *(or your Cloudflare tunnel URL if n8n is remote — see prerequisites; `http://host.docker.internal:8000/...` if n8n is in Docker)*
    - **Send Body:** ON → **Body Content Type:** `JSON`
-   - **Specify Body:** `Using JSON` → paste this expression:
+   - **Specify Body:** `Using JSON` → paste this expression (reading the webhook body by node
+     reference so it resolves regardless of what the Set node passes through):
      ```
-     ={{ { "order": $json.body.order, "customer_lines": $json.body.customer_lines } }}
+     ={{ { "order": $('Webhook').item.json.body.order, "customer_lines": $('Webhook').item.json.body.customer_lines } }}
      ```
 3. Connect: **Enrich Order Context → Call Voice Agent**.
 4. **Demo hardening (recommended):** open this node's **Settings** tab → set **On Error** to

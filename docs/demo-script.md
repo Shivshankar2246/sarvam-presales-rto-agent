@@ -78,8 +78,10 @@ take.)*
 *(Switch to n8n + the voice service running.)*
 
 ```bash
-# voice service already running on :8000
-curl -X POST http://localhost:5678/webhook-test/sampark-trigger \
+# voice service already running on :8000 (exposed via a Cloudflare tunnel if n8n is remote)
+# Use YOUR n8n webhook "Test URL" — local n8n: http://localhost:5678/...
+# hosted n8n (e.g. Hostinger): https://<your-instance>/webhook-test/sampark-trigger
+curl -X POST '<YOUR-N8N-WEBHOOK-TEST-URL>' \
      -H 'content-type: application/json' -d @samples/trigger_cod_prepaid.json
 ```
 
