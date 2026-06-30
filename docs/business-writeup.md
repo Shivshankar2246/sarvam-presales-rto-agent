@@ -1,7 +1,7 @@
 # Project Sampark — Business Case
 
 **Prepared for:** VP Operations / CTO, a high-growth D2C brand
-**Prepared by:** Pre-Sales Engineering, Sarvam AI
+**Prepared by:** Pre-Sales Engineering, Sarvam AI *(assignment submission by Vignesh Srinivasan)*
 **Subject:** Cutting Return-to-Origin (RTO) losses with a regional-language voice agent
 
 > A one-line version for the busy exec: *Your highest-RTO customers are the ones your current

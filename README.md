@@ -7,6 +7,8 @@
 > Sarvam AI — Pre-Sales Engineer Assignment · Use case: **Reducing Return-to-Origin (RTO) for
 > Indian D2C e-commerce** (not from the inspiration list — chosen to show where Sarvam's stack
 > wins decisively).
+>
+> **Submitted by: Vignesh Srinivasan**
 
 **Sampark** (संपर्क, "to connect") reconnects the brand with the customer in the 30-minute window
 before a delivery fails — the moment that decides whether an order is delivered or becomes an
