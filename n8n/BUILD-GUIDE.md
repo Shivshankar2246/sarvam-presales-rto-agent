@@ -93,11 +93,20 @@ in-language Sarvam conversation and returns the **disposition** + **tools_called
      ={{ { "order": $json.body.order, "customer_lines": $json.body.customer_lines } }}
      ```
 3. Connect: **Enrich Order Context → Call Voice Agent**.
+4. **Demo hardening (recommended):** open this node's **Settings** tab → set **On Error** to
+   *Continue (using error output)* (older n8n: tick **Continue On Fail**). A local network blip on
+   the voice service then won't crash the whole execution mid-demo.
 
 The response body now contains:
 ```json
 { "order_id": "...", "disposition": "CONVERTED_PREPAID", "tools_called": [...], "transcript": [...] }
 ```
+
+> **Production note:** this PoC is *synchronous* — the OMS waits for the call to finish and gets the
+> disposition back in the HTTP response. That's perfect for a demo that returns an end-to-end
+> payload. In production you'd usually **respond `200 OK` at the Webhook immediately** and process
+> the call asynchronously, so a carrier-side timeout can't hang the OMS. (Mention this in the demo —
+> it signals you understand the production tradeoff.)
 
 ---
 
@@ -123,14 +132,25 @@ For each branch, add an **HTTP Request** node. For the PoC, set every URL to you
 **webhook.site** URL (so you can watch them fire); in production these become real OMS/3PL/
 WhatsApp APIs. For all of them: Method `POST`, Send Body `JSON`.
 
+> ⚠️ **CRITICAL — read the voice-service response with a NODE REFERENCE, not `$json`.**
+> In n8n, `$json` is only the output of the *immediately preceding* node. So in "WhatsApp"
+> (which runs after "OMS: mark prepaid"), `$json` is the OMS mock's reply — `$json.order_id`
+> would be `undefined`. To always read the **Call Voice Agent** response no matter where a node
+> sits, reference that node explicitly:
+> ```
+> {{ $('Call Voice Agent').item.json.order_id }}
+> ```
+> Use this `$('Call Voice Agent').item.json.*` form in EVERY downstream node below (and in
+> Node 10 and Node 11). Don't use the deprecated `$node["..."].json` syntax.
+
 | Node name | Wire from Switch output | JSON body expression |
 |---|---|---|
-| **OMS: mark prepaid** | 0 (CONVERTED_PREPAID) | `={{ { "action":"mark_prepaid", "order_id":$json.order_id } }}` |
-| **WhatsApp: payment confirmation** | after "OMS: mark prepaid" | `={{ { "to":$json.order_id, "template":"prepaid_confirmed" } }}` |
-| **3PL: reschedule** | 1 (RESCHEDULED) | `={{ { "action":"reschedule", "order_id":$json.order_id, "slot":$json.tools_called[0].args.preferred_slot } }}` |
-| **OMS: update address** | 2 (ADDRESS_FIXED) | `={{ { "action":"update_address", "order_id":$json.order_id, "address":$json.tools_called[0].args.corrected_address, "landmark":$json.tools_called[0].args.landmark } }}` |
-| **OMS: cancel + 3PL hold** | 3 (CANCELLED) | `={{ { "action":"cancel_and_hold", "order_id":$json.order_id, "reason":$json.tools_called[0].args.reason } }}` |
-| **Slack: human queue** | fallback (ESCALATED/UNREACHABLE) | `={{ { "channel":"#ndr-escalations", "text":"Manual follow-up needed for " + $json.order_id } }}` |
+| **OMS: mark prepaid** | 0 (CONVERTED_PREPAID) | `={{ { "action":"mark_prepaid", "order_id":$('Call Voice Agent').item.json.order_id } }}` |
+| **WhatsApp: payment confirmation** | after "OMS: mark prepaid" | `={{ { "to":$('Call Voice Agent').item.json.order_id, "template":"prepaid_confirmed" } }}` |
+| **3PL: reschedule** | 1 (RESCHEDULED) | `={{ { "action":"reschedule", "order_id":$('Call Voice Agent').item.json.order_id, "slot":$('Call Voice Agent').item.json.tools_called[0].args.preferred_slot } }}` |
+| **OMS: update address** | 2 (ADDRESS_FIXED) | `={{ { "action":"update_address", "order_id":$('Call Voice Agent').item.json.order_id, "address":$('Call Voice Agent').item.json.tools_called[0].args.corrected_address, "landmark":$('Call Voice Agent').item.json.tools_called[0].args.landmark } }}` |
+| **OMS: cancel + 3PL hold** | 3 (CANCELLED) | `={{ { "action":"cancel_and_hold", "order_id":$('Call Voice Agent').item.json.order_id, "reason":$('Call Voice Agent').item.json.tools_called[0].args.reason } }}` |
+| **Slack: human queue** | fallback (ESCALATED/UNREACHABLE) | `={{ { "channel":"#ndr-escalations", "text":"Manual follow-up needed for " + $('Call Voice Agent').item.json.order_id } }}` |
 
 > Tip: you only *need* one branch wired to make the demo land (the COD→prepaid path is the money
 > shot). Build that branch fully first, then clone the HTTP node for the others.
@@ -140,11 +160,13 @@ WhatsApp APIs. For all of them: Method `POST`, Send Body `JSON`.
 ## Node 10 — HTTP Request: "Log to CRM" (every branch lands here)
 
 1. Add node → **HTTP Request** → rename **`Log to CRM`**.
-2. Method `POST`, URL = your webhook.site URL, Body JSON:
+2. Method `POST`, URL = your webhook.site URL, Body JSON (node-reference again — `$json` here
+   would be the upstream mock's reply):
    ```
-   ={{ { "order_id":$json.order_id, "disposition":$json.disposition, "language":$json.language, "logged_at":$now } }}
+   ={{ { "order_id":$('Call Voice Agent').item.json.order_id, "disposition":$('Call Voice Agent').item.json.disposition, "language":$('Call Voice Agent').item.json.language, "logged_at":$now } }}
    ```
-3. Connect **every** downstream node's output into **Log to CRM** (n8n allows many→one).
+3. Connect **every** downstream node's output into **Log to CRM**. Many→one is fine here: the
+   branches are mutually exclusive, so only the one active path executes — no Merge node needed.
 
 > Real version: swap for a **Google Sheets → Append Row** node (the ops dashboard) or your CRM
 > node. It's an HTTP node here so the workflow imports with zero credential setup.
@@ -154,7 +176,7 @@ WhatsApp APIs. For all of them: Method `POST`, Send Body `JSON`.
 ## Node 11 — Respond to Webhook
 
 1. Add node → **Respond to Webhook** → rename **`Done`**.
-2. **Respond With:** `JSON` → Body: `={{ { "ok": true, "disposition": $json.disposition } }}`
+2. **Respond With:** `JSON` → Body: `={{ { "ok": true, "disposition": $('Call Voice Agent').item.json.disposition } }}`
 3. Connect **Log to CRM → Done**.
 
 ---

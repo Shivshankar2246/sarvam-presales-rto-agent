@@ -17,15 +17,19 @@
     },
     {
       "parameters": {
-        "values": {
-          "boolean": [{ "name": "enriched", "value": true }]
+        "mode": "manual",
+        "includeOtherFields": true,
+        "assignments": {
+          "assignments": [
+            { "id": "assign-enriched", "name": "enriched", "type": "boolean", "value": true }
+          ]
         },
         "options": {}
       },
       "id": "node-enrich",
       "name": "Enrich Order Context",
       "type": "n8n-nodes-base.set",
-      "typeVersion": 1,
+      "typeVersion": 3.4,
       "position": [120, 300]
     },
     {
@@ -41,7 +45,8 @@
       "name": "Call Voice Agent",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
-      "position": [340, 300]
+      "position": [340, 300],
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
@@ -69,7 +74,7 @@
         "url": "https://webhook.site/your-mock-url",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { \"action\": \"mark_prepaid\", \"order_id\": $json.order_id } }}",
+        "jsonBody": "={{ { \"action\": \"mark_prepaid\", \"order_id\": $('Call Voice Agent').item.json.order_id } }}",
         "options": {}
       },
       "id": "node-oms-prepaid",
@@ -84,7 +89,7 @@
         "url": "https://webhook.site/your-mock-url",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { \"to\": $json.order_id, \"template\": \"prepaid_confirmed\" } }}",
+        "jsonBody": "={{ { \"to\": $('Call Voice Agent').item.json.order_id, \"template\": \"prepaid_confirmed\" } }}",
         "options": {}
       },
       "id": "node-wa-prepaid",
@@ -99,7 +104,7 @@
         "url": "https://webhook.site/your-mock-url",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { \"action\": \"reschedule\", \"order_id\": $json.order_id, \"slot\": $json.tools_called[0].args.preferred_slot } }}",
+        "jsonBody": "={{ { \"action\": \"reschedule\", \"order_id\": $('Call Voice Agent').item.json.order_id, \"slot\": $('Call Voice Agent').item.json.tools_called[0].args.preferred_slot } }}",
         "options": {}
       },
       "id": "node-3pl-resched",
@@ -114,7 +119,7 @@
         "url": "https://webhook.site/your-mock-url",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { \"action\": \"update_address\", \"order_id\": $json.order_id, \"address\": $json.tools_called[0].args.corrected_address, \"landmark\": $json.tools_called[0].args.landmark } }}",
+        "jsonBody": "={{ { \"action\": \"update_address\", \"order_id\": $('Call Voice Agent').item.json.order_id, \"address\": $('Call Voice Agent').item.json.tools_called[0].args.corrected_address, \"landmark\": $('Call Voice Agent').item.json.tools_called[0].args.landmark } }}",
         "options": {}
       },
       "id": "node-oms-addr",
@@ -129,7 +134,7 @@
         "url": "https://webhook.site/your-mock-url",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { \"action\": \"cancel_and_hold\", \"order_id\": $json.order_id, \"reason\": $json.tools_called[0].args.reason } }}",
+        "jsonBody": "={{ { \"action\": \"cancel_and_hold\", \"order_id\": $('Call Voice Agent').item.json.order_id, \"reason\": $('Call Voice Agent').item.json.tools_called[0].args.reason } }}",
         "options": {}
       },
       "id": "node-oms-cancel",
@@ -144,7 +149,7 @@
         "url": "https://webhook.site/your-mock-url",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { \"channel\": \"#ndr-escalations\", \"text\": \"Manual follow-up needed for \" + $json.order_id + \" (\" + $json.disposition + \")\" } }}",
+        "jsonBody": "={{ { \"channel\": \"#ndr-escalations\", \"text\": \"Manual follow-up needed for \" + $('Call Voice Agent').item.json.order_id + \" (\" + $('Call Voice Agent').item.json.disposition + \")\" } }}",
         "options": {}
       },
       "id": "node-slack",
@@ -159,7 +164,7 @@
         "url": "https://webhook.site/your-mock-url",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { \"order_id\": $json.order_id, \"disposition\": $json.disposition, \"language\": $json.language } }}",
+        "jsonBody": "={{ { \"order_id\": $('Call Voice Agent').item.json.order_id, \"disposition\": $('Call Voice Agent').item.json.disposition, \"language\": $('Call Voice Agent').item.json.language } }}",
         "options": {}
       },
       "id": "node-crm",
@@ -171,7 +176,7 @@
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ { \"ok\": true, \"disposition\": $json.disposition } }}",
+        "responseBody": "={{ { \"ok\": true, \"disposition\": $('Call Voice Agent').item.json.disposition } }}",
         "options": {}
       },
       "id": "node-done",
