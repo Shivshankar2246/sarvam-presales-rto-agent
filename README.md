@@ -102,6 +102,12 @@ reference. The end-to-end triggered sequence:
 > (reschedule / fix address / convert to prepaid) → **downstream updated** (OMS · 3PL · WhatsApp ·
 > CRM) — exactly the flow the assignment asks for.
 
+> ✅ **Verified live end-to-end.** This was built and run on a self-hosted n8n instance: an OMS
+> webhook fired the trigger → n8n called the voice service → `sarvam-30b` ran a real Hindi
+> conversation and called `convert_to_prepaid` → the Switch routed on the disposition → the OMS /
+> WhatsApp / CRM nodes posted the resolution downstream. (When n8n is remote, the local voice
+> service is exposed via a Cloudflare tunnel — see the build guide.)
+
 ---
 
 ## 📊 Post-call analytics (optional deliverable)
@@ -177,6 +183,25 @@ sarvam-presales-rto-agent/
 
 Shows multilingual conversations (Hindi · Tamil · Hinglish), the live tool-calling, and the n8n
 fan-out firing.
+
+---
+
+## ✅ Deliverables (mapped to the assignment)
+
+| Deliverable | Status |
+|---|---|
+| Working solution — **voice bot + agentic workflow (A+B)** | ✅ Built & verified live |
+| Runnable code + README | ✅ This repo — runs via mock or real key |
+| Architecture diagram | ✅ [`docs/architecture.md`](docs/architecture.md) |
+| Business write-up (problem → ROI → rollout) | ✅ [`docs/business-writeup.md`](docs/business-writeup.md) |
+| Multilingual (2+ Indian langs + code-mixing) | ✅ Hindi · Tamil · Hinglish |
+| Meaningful Sarvam usage | ✅ STT (Saaras) · LLM (sarvam-30b) · TTS (Bulbul) · Translate (Mayura) |
+| Real enterprise context | ✅ RTO reduction for Indian D2C, cited numbers |
+| Post-call analytics pipeline *(optional)* | ✅ [`src/analytics/`](src/analytics/) |
+| Demo video | 🎥 see link above |
+
+The **n8n agentic backend was built and run end-to-end on a self-hosted n8n instance**: webhook
+trigger → real Sarvam Hindi call → tool-call → disposition routing → OMS/WhatsApp/CRM fan-out.
 
 ---
 
