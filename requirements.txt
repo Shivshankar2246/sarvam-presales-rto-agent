@@ -14,3 +14,6 @@ numpy>=1.24
 
 # Official Sarvam SDK — optional alternative to the raw-requests client.
 sarvamai>=0.1.28
+
+# Business-facing demo dashboard
+streamlit>=1.30

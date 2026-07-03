@@ -31,7 +31,24 @@ Full business case with the ROI model: **[`docs/business-writeup.md`](docs/busin
 
 ---
 
-## 🚀 Quickstart (runs in 30 seconds, no API key)
+## 🖥️ See it in action — the Delivery Rescue Console
+
+The business-facing way to experience Sampark: a clean dashboard where you **click "Call now" on an
+at-risk order and watch (and hear) the AI rescue it** in the customer's language — then see the
+systems it updated, in plain English. Built for a non-technical audience (COO / VP Ops).
+
+```bash
+pip install -r requirements.txt
+# add SARVAM_API_KEY to .env to hear the real voice (see below); works in demo mode without it
+streamlit run src/dashboard.py
+```
+
+Three at-risk orders, three languages, three saves — no terminal, no code on screen. This is what
+the [demo video](#-demo-video) walks through.
+
+---
+
+## 🚀 Developer quickstart (runs in 30 seconds, no API key)
 
 The repo ships an offline **mock** so a reviewer can see the whole flow before adding any key.
 
@@ -162,6 +179,7 @@ sarvam-presales-rto-agent/
 │   │   └── scenarios.py           ← sample orders + scripted demo lines
 │   ├── voice/                     ← live mic/speaker loop (voice mode)
 │   ├── analytics/                 ← optional: post-call analytics pipeline
+│   ├── dashboard.py               ← business demo UI (Streamlit) — the CEO-facing console
 │   ├── run_demo.py                ← CLI demo (auto / text / voice)
 │   └── server.py                  ← FastAPI service n8n triggers
 ├── n8n/
@@ -171,7 +189,8 @@ sarvam-presales-rto-agent/
 │   ├── business-writeup.md        ← the pre-sales artifact (problem → ROI → rollout)
 │   ├── architecture.md            ← system diagram + data flow
 │   ├── solution-design.md         ← scenario, conversation flows, agent contract
-│   └── demo-script.md             ← the 3–5 min video script
+│   ├── demo-script.md             ← the 3-min video voiceover script
+│   └── vky-guide.md               ← step-by-step demo-recording guide (presenter)
 └── samples/                       ← example trigger payloads
 ```
 
