@@ -18,9 +18,12 @@ expensive Return-to-Origin.
 
 ## Why this use case
 
-Indian e-commerce runs on COD, and **COD orders return-to-origin at ~26% vs <2% for prepaid —
-~13x worse** *(Shipway ShipNotes FY25, the one primary hard-sampled RTO benchmark)*. For a brand
-shipping 1.2 lakh orders/month, that's **~₹5.5 crore/year** leaking out the bottom of the P&L.
+Indian e-commerce runs on COD, and **COD orders come back 30–40% of the time vs just 5–7% for
+prepaid — up to 8× worse** *(Snapmint, Shiprocket 2024; Shipway's cross-category sample puts COD
+RTO at 26%)*. Each return costs **₹300–700 fully loaded** — freight both ways, packaging, and the
+wasted ad spend to win a customer who never receives the order — **wiping out the profit of ~3
+delivered orders**. For a brand shipping 1.2 lakh orders/month, that's **₹5.5 crore+/year** leaking
+out the bottom of the P&L.
 
 The customers who RTO the most — Tier 2/3, COD, regional-language buyers — are exactly the ones
 the current Hindi/English tele-calling team **can't reach**. **Voice in their own language is the

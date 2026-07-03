@@ -18,18 +18,19 @@ the P&L** — and it is concentrated almost entirely in Cash-on-Delivery (COD) o
 
 The hard numbers:
 
-- **COD orders return at ~26%, versus under 2% for prepaid — roughly 13x worse.** *(Shipway
-  ShipNotes FY25, sampled across cities with 5,000+ non-prepaid orders — the one primary,
-  hard-sampled RTO benchmark in the market.)* In apparel/fashion the COD RTO runs higher still,
-  commonly cited at **25–40%**.
-- **~50% of all Indian online orders are still COD**, rising to **60%+ for newer D2C brands and
-  Tier 2/3 cities.** *(Economic Times, May 2026.)* COD isn't fading — for first-time and
-  small-town buyers, **trust, not payment rails, is the bottleneck.**
-- **Tier 2/3 cities drove ~66% of incremental D2C order volume in FY26** *(Unicommerce India D2C
-  Report 2026)* — i.e. the RTO problem is growing fastest in exactly the low-English, high-COD
-  cohort.
-- A single RTO costs **₹180–240 in logistics alone, and up to ₹400–560 all-in** once wasted
-  marketing spend and product damage are counted. *(Industry estimates — BePragma, HillTeck.)*
+- **COD orders come back 30–40% of the time, versus 5–7% for prepaid — up to 8× worse.**
+  *(Snapmint 2024; Shiprocket puts it at COD 20–30% / prepaid 10–15%; Shipway's hard-sampled
+  cross-category number is 26% COD.)* Fashion/apparel — the COD-heaviest category — sits at the
+  top of that range.
+- A single RTO costs **₹300–700 fully loaded** — freight both ways + packaging + the wasted
+  customer-acquisition spend on an order that earns nothing — which **wipes out the profit of
+  roughly 3 delivered orders.** *(Shiprocket / Base.com unit-economics synthesis, 2024. Logistics
+  only, it's ~₹125–230.)*
+- **~50% of all Indian online orders are still COD**, rising to **60–80% in Tier 2/3 cities.**
+  COD isn't fading — for first-time and small-town buyers, **trust, not payment rails, is the
+  bottleneck.**
+- **Tier 2/3 cities drove ~65% of festive orders (Tier 3 alone ~46%)** *(Fynd Festive Report
+  2025)* — i.e. the RTO problem is growing fastest in exactly the low-English, high-COD cohort.
 
 **For a representative brand — "Rivaayat", 1.2 lakh orders/month, 64% COD, apparel:**
 
