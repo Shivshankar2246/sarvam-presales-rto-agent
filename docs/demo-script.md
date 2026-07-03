@@ -1,126 +1,53 @@
-# Demo Video Script — Project Sampark (3–5 min)
+# 🎬 Demo Video Script — Project Sampark
 
-> Goal: in 3–5 minutes, prove all four scoring criteria — real enterprise problem, working
-> multilingual demo, meaningful Sarvam usage, clear business value. Record with Loom or QuickTime.
-> Keep energy high; you're a pre-sales engineer walking a CTO through a solution, not a coder
-> reading code.
-
-**Setup before you hit record:**
-- Terminal open in the repo, `.env` with a real `SARVAM_API_KEY` set (for the `--speak` audio).
-- The business write-up (`docs/business-writeup.md`) and architecture diagram open in tabs.
-- n8n open with the workflow built, and a webhook.site tab visible.
-- Audio on (so the Sarvam TTS voice is audible).
+> 3-minute walkthrough voiceover, mapped beat-by-beat to on-screen actions.
+> Pre-Sales Engineer Assignment · **Vignesh Srinivasan** · Target runtime: **~3:00**
 
 ---
 
-### [0:00–0:30] The hook — the problem, in money
+## Setup before you hit record
 
-*(On camera or voiceover over the business write-up's problem table.)*
-
-> "Indian e-commerce has a ₹5-crore-a-year leak called RTO — return to origin. COD orders come
-> back at 26%, prepaid at under 2%. And here's the trap: the customers who return the most are
-> Tier-2 and Tier-3, regional-language, cash-on-delivery buyers — exactly the people a Hindi-English
-> call-center team can't reach. So I built **Sampark**: a voice agent that calls them in *their*
-> language, the moment a delivery is at risk, and fixes the order before it fails."
-
-*Why it scores: real enterprise problem + real numbers in the first 30 seconds.*
+- **Voice service** running with a real key: `cd src && uvicorn server:app --port 8000`
+  (if n8n is remote, expose it: `cloudflared tunnel --url http://localhost:8000`)
+- **n8n** open with the workflow built + a **webhook.site** tab visible
+- **`docs/business-writeup.md`** (ROI table) and **`docs/architecture.md`** (diagram) open in tabs
+- Audio **on** — so the Sarvam TTS voice is audible
+- Record with Loom or QuickTime · export to Loom / YouTube (unlisted) / Google Drive
 
 ---
 
-### [0:30–1:00] What it is — the architecture, 20 seconds
+## The script
 
-*(Show `docs/architecture.md` diagram.)*
-
-> "It's a voice bot plus an agentic backend. The voice agent runs entirely on Sarvam — Saaras for
-> speech-to-text, sarvam-30b to reason and decide, Bulbul to speak. When it resolves the call, an
-> n8n workflow fans the result out to the OMS, the courier, WhatsApp, and the CRM — automatically.
-> That's the difference between a chatbot and an enterprise system."
-
----
-
-### [1:00–2:30] The demo — three languages, three saves *(the core 90 seconds)*
-
-**Save 1 — Hindi, COD → prepaid (the money shot).** Run with audio:
-```bash
-python src/run_demo.py --scenario cod_prepaid --mode auto --speak
-```
-> "Order's out for delivery, ₹1,450 COD. Listen — the agent speaks Hindi." *(let the TTS play)*
-> "Customer says he has no cash. Watch: the agent offers a UPI link, and **fires the
-> `convert_to_prepaid` tool** — that COD order just became prepaid, and its return-risk dropped
-> from 30% to under 2%. That's the single highest-ROI move in the whole system."
-
-**Save 2 — Tamil, reschedule.** 
-```bash
-python src/run_demo.py --scenario reschedule --mode auto --speak
-```
-> "Different customer, **Tamil** this time — same agent, no code change. He's travelling, so the
-> agent reschedules to tomorrow. `reschedule_delivery` fires."
-
-**Save 3 — Hinglish, address fix.**
-```bash
-python src/run_demo.py --scenario address --mode auto
-```
-> "And here's the Sarvam superpower — **code-mixing**. The customer answers in Hinglish:
-> *'ground floor likha hai but actually second floor hai, blue gate ke saamne.'* The agent catches
-> the correction and fires `update_address`. A generic STT mis-transcribes that line — Saaras
-> handles it natively."
-
-*Why it scores: 2+ Indian languages ✓, code-mixing ✓, meaningful Sarvam usage ✓, working demo ✓.*
-
-*(Optional, if you have a mic and want to show live STT: run `--mode voice` and actually speak a
-line in Hindi. Powerful if it works on the day — but the scripted `--speak` runs are your safe
-take.)*
+| Time | On screen | Voiceover (read this aloud) |
+|---|---|---|
+| **0:00–0:15** | Bold number: **₹5.5 crore / year** (or the write-up's problem table) | "Every year, Indian D2C brands burn crores on one silent leak: **Return to Origin**. Cash-on-delivery orders come back at **26%** — versus under 2 for prepaid. For a brand shipping a lakh orders a month, that's **five and a half crore rupees, gone.**" |
+| **0:15–0:32** | Highlight "Tier 2/3 · regional-language · COD" → title card **"Project Sampark"** | "And the customers who return the most are the ones your call-center **can't reach** — small-town, cash-first, regional-language buyers. So I built **Sampark**: a voice agent that calls them in **their own language** the moment a delivery is at risk, and fixes the order before it fails. It runs on **Sarvam**." |
+| **0:32–0:47** | `docs/architecture.md` diagram | "Two halves. A **voice bot** — Sarvam listens with **Saaras**, reasons with **sarvam-30b**, and speaks with **Bulbul**. And an **agentic backend** in n8n that turns every call into real action across your systems. Let me show you." |
+| **0:47–1:15** | Terminal: `run_demo.py --scenario cod_prepaid --speak` — *let the Hindi TTS play ~5s* | "Order out for delivery, ₹1,450 in cash. Listen — the agent speaks **Hindi**." *(pause for audio)* "The customer has no cash. So the agent offers a **UPI link** and fires the **convert-to-prepaid** tool. That one move drops this order's return-risk from 30% to under 2." |
+| **1:15–1:35** | Terminal: `--scenario reschedule --speak` (Tamil audio) | "Different customer — **Tamil** now. Same agent, zero code change. He's travelling, so it **reschedules** to a slot he confirms out loud." |
+| **1:35–2:00** | Terminal: `--scenario address` (Hinglish) — highlight the transcript line | "And here's **Sarvam's edge — code-mixing**. The customer answers in **Hinglish**: *'ground floor likha hai, but actually second floor hai.'* Saaras catches it, the agent **fixes the address**. A generic transcriber mangles that line — this is exactly where a US voice stack breaks." |
+| **2:00–2:35** | n8n canvas → fire the `curl` → nodes go green → webhook.site payloads land | "Now the **other half**. An order-management webhook fires 'out for delivery' into **n8n**. n8n runs the call, the outcome comes back as **converted-to-prepaid**, and n8n **routes on it** — flipping the OMS to prepaid and sending the WhatsApp payment link. Event in, systems updated, **no human in the loop.**" |
+| **2:35–2:55** | ROI table from `business-writeup.md` | "The math is simple. Conservatively, this **pays for itself 2.5 times over in month one**. And it only works on **Sarvam** — the whole value is a low-latency, regional-language, code-mixing call, with the customer's data **staying in India**. A generic stack can't follow. That's **Project Sampark**. Thanks for watching." |
 
 ---
 
-### [2:30–3:30] The agentic backend — n8n fan-out
+## Alternate opening hooks (pick the one you'll deliver best)
 
-*(Switch to n8n + the voice service running.)*
+- **A (money-first — recommended):** "Every year, Indian D2C brands burn crores on one silent leak: Return to Origin…" — leads with the number, hardest-hitting.
+- **B (rhetorical):** "What if the customers who return the most are the exact ones your call-center can never reach? In Indian e-commerce, they are — and it costs brands crores."
+- **C (cold-cut to the demo):** "This is an AI agent calling a customer in Hindi to save a delivery that was about to fail. Let me show you why that's a five-crore problem."
 
-```bash
-# voice service already running on :8000 (exposed via a Cloudflare tunnel if n8n is remote)
-# Use YOUR n8n webhook "Test URL" — local n8n: http://localhost:5678/...
-# hosted n8n (e.g. Hostinger): https://<your-instance>/webhook-test/sampark-trigger
-curl -X POST '<YOUR-N8N-WEBHOOK-TEST-URL>' \
-     -H 'content-type: application/json' -d @samples/trigger_cod_prepaid.json
-```
+## Alternate closing lines
 
-> "Now the full pipeline. An OMS webhook fires 'out for delivery' into n8n. n8n calls the voice
-> agent, the call resolves as `CONVERTED_PREPAID`, and n8n routes on that disposition —
-> flipping the OMS to prepaid and firing the WhatsApp payment link." *(show the webhook.site
-> payloads landing)* "Event in, systems updated, zero humans. That's the agentic loop."
+- **A (recommended):** "…A generic stack can't follow. That's Project Sampark. Thanks for watching."
+- **B (forward-looking):** "…It's a proof-of-concept today — but every piece a production rollout needs is mapped in the repo. That's Project Sampark."
 
 ---
 
-### [3:30–4:30] The business case — why Sarvam, and the ROI
+## Delivery notes
 
-*(Show the ROI table in `docs/business-writeup.md`.)*
-
-> "Conservative case — and I deliberately discounted every number below the industry band — this
-> pays back in month one: ~₹11.5 lakh saved against ~₹4.6 lakh in cost, about 2.5x. Upside case,
-> 7x. And to cover 100% of COD orders manually you'd need a 30-seat, 10-language, 24/7 team —
-> ₹15-to-38 lakh a month. Sampark does it as software.
->
-> The reason this *has* to be Sarvam: the entire value is the regional-language, code-mixing,
-> low-latency call. That's Sarvam's home turf and a generic US voice stack structurally can't
-> follow — wrong languages, broken code-mixing, too much latency, and a DPDP data-residency
-> problem on every customer's address and phone number."
-
----
-
-### [4:30–5:00] Close
-
-> "So that's Sampark — a real enterprise problem, a working multilingual voice agent on Sarvam's
-> stack, an agentic backend that closes the loop, and a business case that pays for itself in
-> month one. Everything's in the repo — runnable in 30 seconds with the mock, or live with a
-> Sarvam key. Thanks for watching."
-
----
-
-## Recording tips
-- **Do the scripted `--speak` runs, not live voice**, as your primary takes — they're reproducible
-  and the audio is clean. Keep one live-voice take as a bonus if it works.
-- If a TTS call is slow on the day, pre-record the three scenario runs once and keep the clips.
-- Show the **disposition JSON** scrolling by at least once — reviewers want to see the structured
-  output, not just the chat.
-- Total: aim for **3:30–4:00**. Tighter is better than padded.
+- **~150 words/min** pace lands this right at 3:00. Don't rush the Hindi/Tamil audio — let it breathe so the reviewer hears the voice quality.
+- Record the three `--speak` runs as your **safe takes** (reproducible); keep one live `--mode voice` take as a bonus if it works on the day.
+- Show the **disposition JSON** and the **webhook.site payloads** on screen at least once — reviewers want to see structured output, not just chat.
+- Before recording: **unpin** the n8n data and **restart the voice service** so the run is fully live.
+- Aim for **2:45–3:00**. Tighter beats padded.
