@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Rivaayat · Delivery Rescue Console</title>
+
+<script type="importmap">
+{
+  "imports": {
+    "@pipecat-ai/client-js": "https://esm.sh/@pipecat-ai/client-js@1.12.0",
+    "@pipecat-ai/small-webrtc-transport": "https://esm.sh/@pipecat-ai/small-webrtc-transport@1.10.5?external=@pipecat-ai/client-js"
+  }
+}
+</script>
+
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+         margin: 0; background: #f5f7fb; color: #101828; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 20px; }
+
+  .hero { background: linear-gradient(100deg,#4f46e5,#0ea5e9); color:#fff; border-radius:18px;
+          padding: 20px 26px; display:flex; align-items:center; justify-content:space-between; gap:16px; }
+  .hero h1 { margin:0; font-size:1.45rem; font-weight:800; letter-spacing:-.4px; }
+  .hero p { margin:4px 0 0; opacity:.9; font-size:.9rem; }
+  .hero .pw { margin-top:5px; font-size:.72rem; opacity:.8; letter-spacing:.3px; }
+  .langbox { background: rgba(255,255,255,.15); border-radius:12px; padding:10px 14px; text-align:right; }
+  .langbox label { font-size:.7rem; text-transform:uppercase; letter-spacing:.5px; opacity:.85; display:block; margin-bottom:4px; }
+  .langbox select { border:0; border-radius:8px; padding:6px 10px; font-weight:700; color:#101828; }
+
+  .grid { display:grid; grid-template-columns: 340px 1fr; gap:18px; margin-top:18px; }
+  @media (max-width: 860px){ .grid { grid-template-columns: 1fr; } }
+
+  .sec-title { font-weight:800; font-size:1.02rem; margin:0 0 10px; }
+
+  .card { background:#fff; border:1px solid #eef1f6; border-radius:14px; padding:16px;
+          box-shadow:0 1px 3px rgba(16,24,40,.06); margin-bottom:12px; }
+  .card .nm { font-weight:700; font-size:1.1rem; margin-bottom:7px; }
+  .badges { margin-bottom:9px; }
+  .badge { display:inline-block; padding:4px 11px; border-radius:999px; font-size:.72rem; font-weight:700; margin-right:7px; }
+  .b-lang { background:#eef2ff; color:#4f46e5; }
+  .b-risk { background:#fef3f2; color:#d92d20; }
+  .meta { color:#475467; font-size:.88rem; line-height:1.5; margin-bottom:7px; }
+  .why { color:#98a2b3; font-size:.78rem; margin-bottom:13px; }
+  .why b { color:#667085; }
+  .callbtn { width:100%; background:#4f46e5; color:#fff; border:0; border-radius:10px;
+             font-weight:700; font-size:.95rem; padding:11px; cursor:pointer; }
+  .callbtn:hover { background:#4338ca; }
+  .callbtn:disabled { opacity:.4; cursor:not-allowed; }
+
+  /* call panel */
+  .callpanel { background:#fff; border:1px solid #eef1f6; border-radius:16px; box-shadow:0 1px 3px rgba(16,24,40,.06);
+               min-height:540px; display:flex; flex-direction:column; overflow:hidden; }
+  .empty { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+           color:#98a2b3; text-align:center; padding:40px; }
+  .empty .big { font-size:2.6rem; margin-bottom:10px; }
+
+  .callhead { padding:18px 22px; border-bottom:1px solid #eef1f6; display:flex; align-items:center; gap:14px; }
+  .avatar { width:52px; height:52px; border-radius:50%; background:#eef2ff; display:flex; align-items:center;
+            justify-content:center; font-size:1.6rem; flex:0 0 52px; }
+  .callhead .nm { font-weight:800; font-size:1.15rem; }
+  .callhead .sub { color:#667085; font-size:.82rem; margin-top:2px; }
+  .livepill { margin-left:auto; text-align:right; }
+  .live { color:#d92d20; font-weight:800; font-size:.82rem; }
+  .live .dot { height:9px; width:9px; background:#d92d20; border-radius:50%; display:inline-block; margin-right:5px;
+               animation:pulse 1s infinite; }
+  .live.off { color:#98a2b3; } .live.off .dot { background:#98a2b3; animation:none; }
+  @keyframes pulse { 0%{opacity:1} 50%{opacity:.25} 100%{opacity:1} }
+  .timer { font-variant-numeric: tabular-nums; color:#101828; font-weight:700; font-size:1.05rem; margin-top:3px; }
+
+  .intent { margin:14px 22px 0; padding:11px 15px; border-radius:12px; background:#f2f4f7; color:#667085;
+            font-weight:700; font-size:.9rem; display:flex; align-items:center; gap:8px; transition:.2s; }
+
+  .transcript { flex:1; overflow-y:auto; padding:16px 22px; display:flex; flex-direction:column; gap:10px; }
+  .row { display:flex; }
+  .row.you { justify-content:flex-end; }
+  .bub { max-width:76%; padding:10px 14px; border-radius:16px; font-size:.98rem; line-height:1.45; }
+  .bub.bot { background:#eef2ff; color:#1e1b4b; border-bottom-left-radius:4px; }
+  .bub.you { background:#101828; color:#fff; border-bottom-right-radius:4px; }
+  .who { font-size:.68rem; text-transform:uppercase; letter-spacing:.05em; opacity:.6; margin-bottom:2px; }
+
+  .controls { padding:16px 22px; border-top:1px solid #eef1f6; display:flex; gap:10px; }
+  .ctl { border:0; border-radius:999px; font-weight:700; font-size:.95rem; padding:12px 22px; cursor:pointer; color:#fff; }
+  .ctl.mute { background:#475569; } .ctl.end { background:#ef4444; margin-left:auto; }
+  .ctl:disabled { opacity:.4; cursor:not-allowed; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <div>
+      <h1>📦 Rivaayat · Delivery Rescue Console</h1>
+      <p>Call an at-risk Cash-on-Delivery customer and save the order — live, in their language.</p>
+      <div class="pw">Real-time voice on Sarvam AI · Saaras (speech) · sarvam-30b (reasoning) · Bulbul (voice)</div>
+    </div>
+    <div class="langbox">
+      <label>Agent speaks</label>
+      <select id="langSel">
+        <option value="">Customer's language</option>
+        <option value="en-IN">English</option>
+        <option value="hi-IN">Hindi</option>
+        <option value="ta-IN">Tamil</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div>
+      <p class="sec-title">🚨 Orders at risk</p>
+      <div id="cards"></div>
+    </div>
+
+    <div class="callpanel" id="panel">
+      <div class="empty" id="empty">
+        <div class="big">📞</div>
+        <div>Select a customer on the left and press <b>Call now</b><br>to start a live conversation.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<audio id="botAudio" autoplay playsinline></audio>
+
+<script type="module">
+import { PipecatClient, RTVIEvent } from "@pipecat-ai/client-js";
+import { SmallWebRTCTransport } from "@pipecat-ai/small-webrtc-transport";
+
+const OFFER_URL = "http://localhost:7860/api/offer";
+
+const CLIENTS = {
+  rakesh:  { id:"RVT-48217", name:"Rakesh Kumar",       first:"Rakesh",  language:"hi-IN", language_name:"Hindi",
+             item:"Men's Kurta Set (Blue, L)", cod:1450, city:"Lucknow", why:"COD · first-time buyer · Tier-2 pincode", avatar:"🧑🏽" },
+  lakshmi: { id:"RVT-50934", name:"Lakshmi Narayanan",  first:"Lakshmi", language:"ta-IN", language_name:"Tamil",
+             item:"Silk Saree (Maroon)", cod:2890, city:"Chennai", why:"COD · high-value order · 4-day transit", avatar:"👩🏽" },
+  priya:   { id:"RVT-51120", name:"Priya Sharma",       first:"Priya",   language:"hi-IN", language_name:"Hindi/Hinglish",
+             item:"Anarkali Dress (Green, M)", cod:1799, city:"Pune", why:"COD · address flagged incomplete", avatar:"👩🏻" },
+};
+
+const INTENT = {
+  CONVERTED_PREPAID: { label:"No cash → offering UPI prepaid", color:"#12b76a", bg:"#ecfdf3" },
+  RESCHEDULED:       { label:"Not available → rescheduling",   color:"#4f46e5", bg:"#eef2ff" },
+  ADDRESS_FIXED:     { label:"Address issue → correcting",     color:"#b54708", bg:"#fffaeb" },
+  CANCELLED:         { label:"Wants to cancel",                color:"#d92d20", bg:"#fef3f2" },
+};
+
+function classify(text){
+  const t = (text||"").toLowerCase();
+  const has = (...w) => w.some(x => t.includes(x));
+  if (has("cancel","don't want","dont want","return it")) return "CANCELLED";
+  if (has("address","wrong","floor","landmark","gate","second floor")) return "ADDRESS_FIXED";
+  if (has("no cash","cash nahi","nahi hai","don't have cash","dont have cash","upi","online","card","no money")) return "CONVERTED_PREPAID";
+  if (has("not available","reschedule","tomorrow","kal","busy","travelling","out of town","not home","later","another day")) return "RESCHEDULED";
+  return null;
+}
+
+const $ = (id) => document.getElementById(id);
+let client=null, timer=null, secs=0, botLine=null, calling=false;
+
+// --- render client cards ---
+const cardsEl = $("cards");
+for (const [key,c] of Object.entries(CLIENTS)){
+  const div = document.createElement("div");
+  div.className = "card";
+  div.innerHTML = `
+    <div class="nm">${c.name}</div>
+    <div class="badges"><span class="badge b-lang">${c.language_name}</span><span class="badge b-risk">⚠ RTO risk</span></div>
+    <div class="meta">${c.item}<br>₹${c.cod} Cash-on-Delivery · ${c.city}</div>
+    <div class="why"><b>Why flagged:</b> ${c.why}</div>
+    <button class="callbtn" data-key="${key}">📞 Call ${c.first} now</button>`;
+  cardsEl.appendChild(div);
+}
+cardsEl.addEventListener("click", (e) => {
+  const btn = e.target.closest(".callbtn");
+  if (btn && !calling) startCall(btn.dataset.key);
+});
+
+function fmt(s){ const m=Math.floor(s/60), r=s%60; return `${m}:${String(r).padStart(2,"0")}`; }
+
+function showCallView(c){
+  calling = true;
+  document.querySelectorAll(".callbtn").forEach(b => b.disabled = true);
+  $("panel").innerHTML = `
+    <div class="callhead">
+      <div class="avatar">${c.avatar}</div>
+      <div>
+        <div class="nm">${c.name}</div>
+        <div class="sub">${c.item} · ₹${c.cod} COD · ${c.city}</div>
+      </div>
+      <div class="livepill">
+        <div class="live off" id="live"><span class="dot"></span><span id="livetext">connecting…</span></div>
+        <div class="timer" id="timer">0:00</div>
+      </div>
+    </div>
+    <div class="intent" id="intent">🧠 Listening…</div>
+    <div class="transcript" id="transcript"></div>
+    <div class="controls">
+      <button class="ctl mute" id="muteBtn" disabled>🎤 Mute</button>
+      <button class="ctl end" id="endBtn">📞 End call</button>
+    </div>`;
+  $("muteBtn").onclick = toggleMute;
+  $("endBtn").onclick = endCall;
+}
+
+function setLive(on, text){
+  const live = $("live"); if(!live) return;
+  live.className = on ? "live" : "live off";
+  $("livetext").textContent = text;
+}
+function addBubble(who, text){
+  const t = $("transcript");
+  const row = document.createElement("div"); row.className = "row " + who;
+  row.innerHTML = `<div class="bub ${who}"><div class="who">${who==="you"?"Customer (you)":"Meera · Sampark AI"}</div><span class="txt"></span></div>`;
+  row.querySelector(".txt").textContent = text;
+  t.appendChild(row); t.scrollTop = t.scrollHeight;
+  return row.querySelector(".txt");
+}
+function setIntent(disp){
+  const el = $("intent"); if(!el) return;
+  if (disp && INTENT[disp]){
+    const i = INTENT[disp];
+    el.textContent = `🧠 Detected: ${i.label}  (${disp})`;
+    el.style.color = i.color; el.style.background = i.bg;
+  }
+}
+
+function buildClient(){
+  return new PipecatClient({
+    transport: new SmallWebRTCTransport(),
+    enableMic: true, enableCam: false,
+    callbacks: {
+      onConnected:    () => { setLive(true,"LIVE"); startTimer(); if($("muteBtn")) $("muteBtn").disabled=false; },
+      onBotReady:     () => setLive(true,"LIVE"),
+      onDisconnected: () => resetPanel(),
+      onError:        (e) => setLive(false, "error"),
+      onUserTranscript: (d) => {
+        if (d?.final && d.text?.trim()){
+          addBubble("you", d.text);
+          const disp = classify(d.text);
+          if (disp) setIntent(disp);
+        }
+      },
+      onBotStartedSpeaking: () => { botLine = null; },
+      onBotTtsText: (d) => {
+        if (!botLine) botLine = addBubble("bot", "");
+        botLine.textContent = (botLine.textContent + " " + (d?.text ?? "")).trim();
+        const t = $("transcript"); if(t) t.scrollTop = t.scrollHeight;
+      },
+      onBotStoppedSpeaking: () => { botLine = null; },
+      onTrackStarted: (track) => {
+        if (track.kind === "audio"){
+          $("botAudio").srcObject = new MediaStream([track]);
+          $("botAudio").play().catch(()=>{});
+        }
+      },
+    },
+  });
+}
+
+async function startCall(key){
+  const c = CLIENTS[key];
+  const lang = ($("langSel").value) || c.language;
+  showCallView(c);
+  setLive(false, "connecting…");
+  client = buildClient();
+  try {
+    await client.connect({ webrtcRequestParams: { endpoint: OFFER_URL, requestData: {
+      customer_id: c.id, customer_name: c.first, item: c.item, cod_amount: c.cod, language: lang
+    }}});
+  } catch(err){
+    setLive(false, "failed — is the bot running?");
+    console.error(err);
+  }
+}
+
+function startTimer(){ stopTimer(); secs=0; timer=setInterval(()=>{ secs++; if($("timer")) $("timer").textContent=fmt(secs); },1000); }
+function stopTimer(){ if(timer){ clearInterval(timer); timer=null; } }
+
+function toggleMute(){
+  if(!client) return;
+  const on = client.isMicEnabled; client.enableMic(!on);
+  $("muteBtn").textContent = on ? "🔇 Unmute" : "🎤 Mute";
+}
+async function endCall(){ if(client) await client.disconnect(); resetPanel(); }
+
+function resetPanel(){
+  stopTimer(); calling=false; botLine=null; client=null;
+  document.querySelectorAll(".callbtn").forEach(b => b.disabled=false);
+  $("panel").innerHTML = `<div class="empty" id="empty"><div class="big">📞</div>
+    <div>Select a customer on the left and press <b>Call now</b><br>to start a live conversation.</div></div>`;
+}
+</script>
+</body>
+</html>

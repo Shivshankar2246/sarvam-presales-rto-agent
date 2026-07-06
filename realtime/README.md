@@ -16,14 +16,25 @@ pip install "pipecat-ai[sarvam,silero,webrtc,openai]" python-dotenv
 cp .env.example .env      # then paste your SARVAM_API_KEY
 ```
 
-## Run it
+## Run it — the Call Console (recommended, polished UI)
+Two terminals:
 ```bash
+# 1) the voice bot
 source .venv/bin/activate
-python bot.py
-```
-It prints:  `🚀 ... http://localhost:7860/client`
+python bot.py -t webrtc
 
-Open **http://localhost:7860/client** in Chrome/Safari → **Connect** → **allow the mic** → talk.
+# 2) the Call Console web app (serves realtime/console/index.html)
+cd console && python3 -m http.server 5500
+```
+Open **http://localhost:5500** → pick a customer → **📞 Call now** → allow mic → talk.
+- Meera greets that customer **by name in their language**, live.
+- Watch the **live transcript** + the **🧠 Detected intent** chip update as you speak.
+- **Mute / End call** controls, a live call timer, barge-in — like a real call screen.
+- Optional: set **"Agent speaks"** (top-right) to force English/Hindi/Tamil.
+
+## Or the bare dev client
+Open **http://localhost:7860/client** → **Connect** → **allow the mic** → talk. (Pipecat's generic
+test UI — functional but unstyled; use the Call Console above for the demo.)
 - Meera greets you and asks about today's delivery.
 - Say things like *"I don't have cash right now"* / *"I'm travelling tomorrow"* / *"the address is wrong, it's second floor"* — she understands and responds live.
 - **Barge-in works:** interrupt her mid-sentence and she stops and listens.

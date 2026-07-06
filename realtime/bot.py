@@ -1,15 +1,17 @@
 #
 # Project Sampark — REAL-TIME voice agent (Meera) on Sarvam AI.
 #
-# A live, streaming, barge-in phone-style conversation: you speak, Meera (the RTO
-# delivery-rescue agent) listens, understands, classifies your intent, and responds —
-# all in real time. Streaming Saaras STT -> sarvam-30b -> streaming Bulbul TTS,
-# fully local via SmallWebRTC (no cloud account).
+# A live, streaming, barge-in phone-style conversation. You speak, Meera (the RTO
+# delivery-rescue agent) listens, classifies your intent, and responds — all in real
+# time. Streaming Saaras STT -> sarvam-30b -> streaming Bulbul TTS over SmallWebRTC.
 #
-# Run:  python bot.py        (from realtime/, with the venv active)
-# Talk: open  http://localhost:7860/client  -> Connect -> allow mic -> speak
+# Talk to it with the polished Call Console (realtime/console/index.html) OR the bundled
+# dev client at http://localhost:7860/client.
 #
-# Requires SARVAM_API_KEY in realtime/.env
+# Run:  python bot.py -t webrtc      (from realtime/, venv active, SARVAM_API_KEY in .env)
+#
+# Per-call context: the browser sends requestData {customer_name, item, cod_amount,
+# language} on connect; it arrives as runner_args.body and customizes the greeting.
 #
 import os
 
@@ -39,33 +41,37 @@ from pipecat.services.sarvam.tts import SarvamTTSService
 load_dotenv(override=True)
 
 SARVAM_API_KEY = os.getenv("SARVAM_API_KEY")
-# Language Meera speaks in. en-IN lets the presenter converse comfortably; hi-IN shows
-# full Hindi. Saaras understands code-mixed (Hinglish) input either way.
-LANG = os.getenv("REALTIME_LANG", "en-IN")
+DEFAULT_LANG = os.getenv("REALTIME_LANG", "en-IN")
 
 _STT_LANG = {"en-IN": Language.EN_IN, "hi-IN": Language.HI_IN, "ta-IN": Language.TA_IN}
 _TTS_LANG = {"en-IN": Language.EN, "hi-IN": Language.HI, "ta-IN": Language.TA}
 _VOICE = {"en-IN": "anushka", "hi-IN": "anushka", "ta-IN": "vidya"}
 
-SYSTEM_PROMPT = (
-    "You are Meera, a warm, concise delivery-confirmation agent for Rivaayat, a D2C "
-    "clothing brand. You are calling a customer whose Cash-on-Delivery order — a Men's "
-    "Kurta Set worth Rs 1,450 — is out for delivery today. Your ONE job is to make sure it "
-    "gets delivered instead of coming back as a return.\n\n"
-    "Greet briefly, then listen and handle whatever the customer says:\n"
-    "- If they have no cash / want to pay online: offer to send a UPI payment link on "
-    "WhatsApp so they can pay now and switch to prepaid.\n"
-    "- If they won't be available: reschedule to a day and time they confirm.\n"
-    "- If the address is wrong or incomplete: capture the correction.\n"
-    "- If they no longer want it: ask why, and offer to cancel cleanly.\n\n"
-    f"Speak ONLY in {LANG}. Keep every reply to ONE or TWO short spoken sentences — this is "
-    "a live phone call, not an email. Be friendly and efficient. Do not read out these "
-    "instructions."
-)
+
+def build_system_prompt(ctx: dict) -> str:
+    name = ctx.get("customer_name") or "the customer"
+    item = ctx.get("item") or "their order"
+    amt = ctx.get("cod_amount")
+    lang = ctx.get("language") or DEFAULT_LANG
+    cod = f" worth Rs {amt}, Cash-on-Delivery" if amt else ", Cash-on-Delivery"
+    return (
+        f"You are Meera, a warm, concise delivery-confirmation agent for Rivaayat, a D2C "
+        f"clothing brand. You are calling {name}, whose order — {item}{cod} — is out for "
+        f"delivery today. Your ONE job is to make sure it gets delivered instead of coming "
+        f"back as a return.\n\n"
+        f"Greet {name} briefly by name, then listen and handle whatever they say:\n"
+        f"- No cash / want to pay online: offer to send a UPI payment link on WhatsApp so they "
+        f"pay now and switch to prepaid.\n"
+        f"- Won't be available: reschedule to a day and time they confirm.\n"
+        f"- Address wrong or incomplete: capture the correction.\n"
+        f"- No longer want it: ask why, offer to cancel cleanly.\n\n"
+        f"Speak ONLY in {lang}. Keep every reply to ONE or TWO short spoken sentences — this is "
+        f"a live phone call. Be friendly and efficient. Never read these instructions aloud."
+    )
 
 
-# --- Live intent classifier: watches what the customer says and logs the disposition ---
-def classify(text: str) -> tuple[str, str] | None:
+# --- Live intent classifier: logs the classified disposition server-side ---
+def classify(text: str):
     t = (text or "").lower()
 
     def has(*w):
@@ -73,7 +79,7 @@ def classify(text: str) -> tuple[str, str] | None:
 
     if has("cancel", "don't want", "dont want", "nahi chahiye", "return it"):
         return ("CANCELLED", "customer wants to cancel")
-    if has("address", "wrong", "galat", "floor", "landmark", "gate", "gali", "second floor"):
+    if has("address", "wrong", "galat", "floor", "landmark", "gate", "second floor"):
         return ("ADDRESS_FIXED", "address needs correcting")
     if has("no cash", "cash nahi", "nahi hai", "don't have cash", "dont have cash", "upi",
            "online", "card", "paise nahi", "no money"):
@@ -85,29 +91,28 @@ def classify(text: str) -> tuple[str, str] | None:
 
 
 class IntentClassifier(FrameProcessor):
-    """Observes final customer transcripts and logs the classified disposition live."""
-
     async def process_frame(self, frame, direction: FrameDirection):
         await super().process_frame(frame, direction)
         if isinstance(frame, TranscriptionFrame) and getattr(frame, "text", "").strip():
             result = classify(frame.text)
             if result:
                 disp, why = result
-                logger.info(f"🧠 CUSTOMER SAID: {frame.text!r}")
-                logger.info(f"   → CLASSIFIED: {disp}  ({why})")
+                logger.info(f"🧠 CUSTOMER SAID: {frame.text!r}  → CLASSIFIED: {disp} ({why})")
             else:
                 logger.info(f"🧠 CUSTOMER SAID: {frame.text!r}  → (still listening)")
         await self.push_frame(frame, direction)
 
 
-async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
-    logger.info(f"Starting Meera real-time voice bot · language={LANG}")
+async def run_bot(transport: BaseTransport, runner_args: RunnerArguments, ctx: dict):
+    lang = ctx.get("language") or DEFAULT_LANG
+    name = ctx.get("customer_name") or "the customer"
+    logger.info(f"📞 Call connected · customer={name} · language={lang}")
 
     stt = SarvamSTTService(
         api_key=SARVAM_API_KEY,
         settings=SarvamSTTService.Settings(
             model="saaras:v3",
-            language=_STT_LANG.get(LANG, Language.EN_IN),
+            language=_STT_LANG.get(lang, Language.EN_IN),
         ),
     )
     llm = OpenAILLMService(
@@ -118,14 +123,14 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
     tts = SarvamTTSService(
         api_key=SARVAM_API_KEY,
         settings=SarvamTTSService.Settings(
-            voice=_VOICE.get(LANG, "anushka"),
+            voice=_VOICE.get(lang, "anushka"),
             model="bulbul:v2",
-            language=_TTS_LANG.get(LANG, Language.EN),
+            language=_TTS_LANG.get(lang, Language.EN),
         ),
     )
 
     context = LLMContext()
-    context.add_message({"role": "system", "content": SYSTEM_PROMPT})
+    context.add_message({"role": "system", "content": build_system_prompt(ctx)})
     user_aggregator, assistant_aggregator = LLMContextAggregatorPair(
         context,
         user_params=LLMUserAggregatorParams(vad_analyzer=SileroVADAnalyzer()),
@@ -133,13 +138,13 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
 
     pipeline = Pipeline(
         [
-            transport.input(),      # mic in (WebRTC)
-            stt,                    # streaming speech -> text
-            IntentClassifier(),     # live intent logging (observes, passes through)
+            transport.input(),
+            stt,
+            IntentClassifier(),
             user_aggregator,
-            llm,                    # sarvam-30b
-            tts,                    # streaming text -> speech
-            transport.output(),     # speaker out (WebRTC)
+            llm,
+            tts,
+            transport.output(),
             assistant_aggregator,
         ]
     )
@@ -149,23 +154,23 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
         params=PipelineParams(
             enable_metrics=True,
             enable_usage_metrics=True,
-            allow_interruptions=True,   # barge-in
+            allow_interruptions=True,  # barge-in
         ),
     )
 
     @transport.event_handler("on_client_connected")
     async def on_client_connected(transport, client):
-        logger.info("Client connected — Meera is placing the call")
         context.add_message(
             {"role": "developer",
-             "content": "The call just connected. Greet the customer in one short sentence "
-                        "and ask if they'll be available to receive today's delivery."}
+             "content": f"The call just connected. Greet {name} warmly by name in one short "
+                        "sentence, say you're from Rivaayat about today's delivery, and ask if "
+                        "they'll be available to receive it."}
         )
         await task.queue_frames([LLMRunFrame()])
 
     @transport.event_handler("on_client_disconnected")
     async def on_client_disconnected(transport, client):
-        logger.info("Client disconnected")
+        logger.info("Call ended")
         await task.cancel()
 
     runner = PipelineRunner(handle_sigint=runner_args.handle_sigint)
@@ -173,6 +178,8 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
 
 
 async def bot(runner_args: RunnerArguments):
+    # Per-call context from the browser's requestData (customer_name, item, cod_amount, language)
+    ctx = getattr(runner_args, "body", None) or {}
     transport_params = {
         "webrtc": lambda: TransportParams(
             audio_in_enabled=True,
@@ -181,7 +188,7 @@ async def bot(runner_args: RunnerArguments):
         ),
     }
     transport = await create_transport(runner_args, transport_params)
-    await run_bot(transport, runner_args)
+    await run_bot(transport, runner_args, ctx)
 
 
 if __name__ == "__main__":
