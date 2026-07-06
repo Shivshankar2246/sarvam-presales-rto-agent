@@ -73,13 +73,13 @@
                 },
                 "conditions": [
                   {
-                    "leftValue": "=={{ $json.disposition }}",
+                    "id": "340abce8-dcd2-4449-a15f-627af368b053",
+                    "leftValue": "={{ $json.disposition }}",
                     "rightValue": "CONVERTED_PREPAID",
                     "operator": {
                       "type": "string",
                       "operation": "contains"
-                    },
-                    "id": "1ba24482-6bd5-4eaf-91d2-955962e703db"
+                    }
                   }
                 ],
                 "combinator": "and"
@@ -170,43 +170,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://webhook.site/your-mock-url",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n    \"action\": \"mark_prepaid\",\n    \"order_id\": \"{{ $('Call Voice Agent').item.json.order_id }}\"\n  }",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.3,
-      "position": [
-        896,
-        -400
-      ],
-      "id": "d10b0451-ae0c-46de-9d21-af4f69e3a8d8",
-      "name": "OMS: mark prepaid"
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "https://webhook.site/your-mock-url",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n    \"to\": \"{{ $('Call Voice Agent').item.json.order_id }}\",\n    \"template\": \"prepaid_confirmed\"\n  }",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.3,
-      "position": [
-        1120,
-        -400
-      ],
-      "id": "9cbeb1f0-6368-49e0-82ec-42c6b23de4e2",
-      "name": "WhatsApp - Payment Confirmation"
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "https://webhook.site/your-mock-url",
+        "url": "https://webhook.site/158bd719-78cd-4ba7-a5cd-c395d30ac570",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n    \"action\": \"reschedule\",                                                   \n    \"order_id\": \"{{ $('Call Voice Agent').item.json.order_id }}\",\n    \"slot\": \"{{ $('Call Voice Agent').item.json.tools_called[0].args.preferred_slot }}\"\n  }",
@@ -215,8 +179,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        1120,
-        -208
+        1056,
+        -96
       ],
       "id": "61f90d5a-230b-4012-a253-59b2a28162b0",
       "name": "3PL: reschedule"
@@ -224,7 +188,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://webhook.site/your-mock-url",
+        "url": "https://webhook.site/158bd719-78cd-4ba7-a5cd-c395d30ac570",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n    \"action\": \"update_address\",\n    \"order_id\": \"{{ $('Call Voice Agent').item.json.order_id }}\",\n    \"address\": \"{{ $('Call Voice Agent').item.json.tools_called[0].args.corrected_address }}\",\n    \"landmark\": \"{{ $('Call Voice Agent').item.json.tools_called[0].args.landmark }}\"\n  }",
@@ -233,8 +197,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        1120,
-        -16
+        1056,
+        80
       ],
       "id": "9a4d073d-5035-49de-9e4c-ff89f40cabd7",
       "name": "OMS: update address"
@@ -242,7 +206,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://webhook.site/your-mock-url",
+        "url": "https://webhook.site/158bd719-78cd-4ba7-a5cd-c395d30ac570",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n    \"action\": \"cancel_and_hold\",\n    \"order_id\": \"{{ $('Call Voice Agent').item.json.order_id }}\",\n    \"reason\": \"{{ $('Call Voice Agent').item.json.tools_called[0].args.reason }}\"\n  }",
@@ -251,8 +215,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        1120,
-        176
+        1056,
+        304
       ],
       "id": "e2f480dc-ee0b-48b1-b498-fb5d72395607",
       "name": "OMS: cancel + 3PL hold"
@@ -260,7 +224,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://webhook.site/your-mock-url",
+        "url": "https://webhook.site/158bd719-78cd-4ba7-a5cd-c395d30ac570",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n    \"channel\": \"#ndr-escalations\",\n    \"text\": \"Manual follow-up needed for order {{ $('Call Voice Agent').item.json.order_id }}, disposition {{\n  $('Call Voice Agent').item.json.disposition }}\"\n  }",
@@ -269,8 +233,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        1120,
-        368
+        1104,
+        512
       ],
       "id": "f0096f75-9388-4a97-87c1-b3feb10f2d27",
       "name": "Slack: human queue"
@@ -278,7 +242,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://webhook.site/your-mock-url",
+        "url": "https://webhook.site/158bd719-78cd-4ba7-a5cd-c395d30ac570",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n    \"order_id\": \"{{ $('Call Voice Agent').item.json.order_id }}\",\n    \"disposition\": \"{{ $('Call Voice Agent').item.json.disposition }}\",\n    \"language\": \"{{ $('Call Voice Agent').item.json.language }}\"\n  }",
@@ -307,8 +271,71 @@
       ],
       "id": "939fad9f-a90f-4b52-8127-46933a7b4fe7",
       "name": "Done"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://webhook.site/158bd719-78cd-4ba7-a5cd-c395d30ac570",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"action\": \"mark_prepaid\",\n  \"order_id\": \"{{ $('Call Voice Agent').item.json.order_id }}\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1088,
+        -256
+      ],
+      "id": "2179d072-1d8f-47aa-9f35-a7e4bf432c4d",
+      "name": "OMS: mark prepaid"
     }
   ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n.srv1137156.hstgr.cloud",
+            "user-agent": "curl/8.1.2",
+            "content-length": "560",
+            "accept": "*/*",
+            "content-type": "application/json",
+            "x-forwarded-for": "172.18.0.1",
+            "x-forwarded-host": "n8n.srv1137156.hstgr.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "e33a52f43b9c",
+            "x-real-ip": "172.18.0.1",
+            "accept-encoding": "gzip"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "order": {
+              "order_id": "RVT-48217",
+              "customer_name": "Rakesh Kumar",
+              "language_code": "hi-IN",
+              "language_name": "Hindi",
+              "item": "Men's Kurta Set (Blue, L)",
+              "cod_amount": 1450,
+              "address": "H.No 14, Indira Nagar, Lucknow, UP 226016",
+              "status": "OUT_FOR_DELIVERY"
+            },
+            "customer_lines": [
+              "हाँ रहूँगा घर पे, लेकिन अभी मेरे पास कैश नहीं है।",
+              "हाँ भेज दो UPI लिंक, मैं अभी पे कर देता हूँ।"
+            ]
+          },
+          "webhookUrl": "https://n8n.srv1137156.hstgr.cloud/webhook-test/sampark-trigger",
+          "executionMode": "test"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
   "connections": {
     "Webhook": {
       "main": [
@@ -382,28 +409,6 @@
         ]
       ]
     },
-    "OMS: mark prepaid": {
-      "main": [
-        [
-          {
-            "node": "WhatsApp - Payment Confirmation",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "WhatsApp - Payment Confirmation": {
-      "main": [
-        [
-          {
-            "node": "Log to CRM",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "3PL: reschedule": {
       "main": [
         [
@@ -458,12 +463,27 @@
           }
         ]
       ]
+    },
+    "OMS: mark prepaid": {
+      "main": [
+        [
+          {
+            "node": "Log to CRM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1",
     "availableInMCP": false
+  },
+  "versionId": "c94b5b77-32ee-488b-a260-b605f0703be0",
+  "meta": {
+    "instanceId": "1b868881354dcf124279904ace49e4a08ba36f08cc437605ecd40fac2e3a5f66"
   },
   "id": "b19hUFFswSaam5UaE-Lhf",
   "tags": []

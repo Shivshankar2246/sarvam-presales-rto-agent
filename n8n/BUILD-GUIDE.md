@@ -15,9 +15,9 @@ Webhook (order event)
    → Enrich Order Context (Set)
    → Call Voice Agent (HTTP → FastAPI /trigger-call)        ← runs the Sarvam voice call, returns disposition
    → Route on Disposition (Switch)
-        ├─ CONVERTED_PREPAID → OMS: mark prepaid   → WhatsApp: payment confirmation
-        ├─ RESCHEDULED       → 3PL: reschedule     → WhatsApp: new slot
-        ├─ ADDRESS_FIXED     → OMS: update address → 3PL: re-route
+        ├─ CONVERTED_PREPAID → OMS: mark prepaid
+        ├─ RESCHEDULED       → 3PL: reschedule
+        ├─ ADDRESS_FIXED     → OMS: update address
         ├─ CANCELLED         → OMS: cancel + 3PL hold
         └─ (fallback) ESCALATED/UNREACHABLE → Slack: human queue
    → Log to CRM (HTTP)  ← every branch lands here
@@ -151,10 +151,10 @@ For each branch, add an **HTTP Request** node. For the PoC, set every URL to you
 WhatsApp APIs. For all of them: Method `POST`, Send Body `JSON`.
 
 > ⚠️ **CRITICAL — read the voice-service response with a NODE REFERENCE, not `$json`.**
-> In n8n, `$json` is only the output of the *immediately preceding* node. So in "WhatsApp"
-> (which runs after "OMS: mark prepaid"), `$json` is the OMS mock's reply — `$json.order_id`
-> would be `undefined`. To always read the **Call Voice Agent** response no matter where a node
-> sits, reference that node explicitly:
+> In n8n, `$json` is only the output of the *immediately preceding* node. So in "Log to CRM"
+> (which runs after an action node like "OMS: mark prepaid"), `$json` is that action mock's reply —
+> `$json.order_id` would be `undefined`. To always read the **Call Voice Agent** response no matter
+> where a node sits, reference that node explicitly:
 > ```
 > {{ $('Call Voice Agent').item.json.order_id }}
 > ```
@@ -171,10 +171,9 @@ WhatsApp APIs. For all of them: Method `POST`, Send Body `JSON`.
 ```json
 { "action": "mark_prepaid", "order_id": "{{ $('Call Voice Agent').item.json.order_id }}" }
 ```
-**WhatsApp: payment confirmation** (chained after OMS: mark prepaid)
-```json
-{ "to": "{{ $('Call Voice Agent').item.json.order_id }}", "template": "prepaid_confirmed" }
-```
+> *Optional (not in the shipped workflow):* chain a **WhatsApp: payment confirmation** node after
+> **OMS: mark prepaid** to send the paid-order receipt —
+> `{ "to": "{{ $('Call Voice Agent').item.json.order_id }}", "template": "prepaid_confirmed" }`
 **3PL: reschedule** (Switch output 1)
 ```json
 { "action": "reschedule", "order_id": "{{ $('Call Voice Agent').item.json.order_id }}", "slot": "{{ $('Call Voice Agent').item.json.tools_called[0].args.preferred_slot }}" }
@@ -243,7 +242,7 @@ WhatsApp APIs. For all of them: Method `POST`, Send Body `JSON`.
      }'
    ```
 4. Watch n8n light up: Webhook → Enrich → Call Voice Agent (disposition `CONVERTED_PREPAID`) →
-   Switch routes to output 0 → OMS + WhatsApp nodes fire → Log to CRM. Check your webhook.site
+   Switch routes to output 0 → OMS: mark prepaid fires → Log to CRM. Check your webhook.site
    tab to see the downstream payloads land.
 
 That's the full **event → reason → tool → downstream** loop the assignment asks for.
