@@ -6,28 +6,29 @@ live call** where you actually talk to the AI in Tamil and watch it update the d
 itself. That live call is the moment that wins it.*
 
 ## What you're recording
-A **~3.5-minute screen recording** with your voice over it. You'll:
-1. Show the business problem (the numbers on the dashboard)
-2. Click **"Call now"** on three orders — Hindi, Tamil, Hinglish saves (the breadth)
-3. **Make ONE real live call** in Tamil, talk to Meera, and show **n8n updating every system** from that call (the proof)
-4. Read the closing line
+A **~3-minute screen recording** with your voice over it. You'll:
+1. Say the business problem (the RTO numbers)
+2. Show the **three customers** in the Call Console and point out their **languages**; pick **Lakshmi (Tamil)**
+3. **Make ONE real live call** in Tamil and just **talk to the agent** — no script (this is the star)
+4. Show **n8n** (one sentence: it updates the systems) and **webhook.site** (the outcome is saved) — the proof
+5. Read the closing line
 
-Keep [`demo-script.md`](demo-script.md) open on your phone or a second screen — read the **Voiceover** column.
+Keep [`demo-script.md`](demo-script.md) open on your phone or a second screen — read the **Voiceover** (framing) lines. **Don't script the call — just talk.**
 
 ---
 
 ## PART 0 — Start everything (do this once, ~3 min)
 
-> Easiest: ask **Shiv** to start these before you record, or run them yourself. You need **three
-> things running** + **one browser check**. Open **Terminal** for each.
+> Easiest: ask **Shiv** to start these before you record, or run them yourself. You need the **bot
+> + Console running** + an **n8n browser check**. Open **Terminal** for each.
 
-**1) The dashboard** (Terminal 1):
+**1) The dashboard — OPTIONAL** (Terminal 1, only if you want the numbers on screen for the opening):
 ```
 cd ~/Documents/sarvam-presales-rto-agent
 source .venv/bin/activate
 streamlit run src/dashboard.py
 ```
-→ browser opens to `http://localhost:8501`. ✅ Header must say **"Live · Sarvam AI"** (not "Demo mode").
+→ browser opens to `http://localhost:8501`. (Skip this if you'll just narrate the numbers.)
 
 **2) The live voice bot** (Terminal 2):
 ```
@@ -66,36 +67,38 @@ Plain QuickTime records your mic only, so the AI voice won't be captured.
 
 ---
 
-## PART 2 — Record the demo (~3.5 min)
+## PART 2 — Record the demo (~3 min)
 
-> Read the matching **Voiceover** line from `demo-script.md`. Speak slowly. **Pause while the AI
-> talks** so the reviewer hears the quality.
+> Read the matching **Voiceover** (framing) lines from `demo-script.md`. Speak slowly. **The call
+> itself is NOT scripted — just talk.** Pause while the agent speaks so the reviewer hears the quality.
 
-### 🎬 Scene 1 — The problem (0:00–0:25)
-- Dashboard on screen. Point at the top numbers: **"342 orders at risk"** and **"₹5.5 Cr"**.
-- **Say** the opening (PROBLEM) line.
+### 🎬 Scene 1 — The problem (0:00–1:00)
+- Show the RTO numbers (dashboard if you started it, or just talk). **Say** the PROBLEM + AGITATE lines.
 
-### 🎬 Scene 2 — The breadth: 3 quick saves (0:25–1:50)
-- On the dashboard, click **Call Rakesh** (Hindi) → let it play → **Call Lakshmi** (Tamil) → **Call Priya** (Hinglish).
-- Let each short rescue play (don't talk over the AI voice). **Say** the SOLVE line as they land.
-- This shows range: three languages, three saves. Keep it brisk.
+### 🎬 Scene 2 — Meet the customers (1:00–1:20)
+- On the **Call Console** (`localhost:5500`), point at the **three customer cards** — each shows its
+  **language** (Rakesh = Hindi, Lakshmi = Tamil, Priya = Hinglish).
+- **Say** the MEET-THE-CUSTOMERS line: *"…for this demo I'll call Lakshmi, she speaks Tamil."*
+- Click **📞 Call Lakshmi** → allow the mic if asked.
 
-### 🎬 Scene 3 — ⭐ PROVE IT LIVE: the real call + n8n (1:50–2:50)  ← the moment that wins it
-1. **Switch to the Call Console tab** (`localhost:5500`).
-2. Click **📞 Call Lakshmi** → allow the mic if asked.
-3. Wait for Meera to greet you in **Tamil**, then **speak your Tamil line** clearly, e.g.
-   *"நான் ஊருக்கு போறேன், நாளைக்கு டெலிவரி பண்ணுங்க"* ("I'm travelling, deliver tomorrow").
-4. Let her reply. *(Optional flourish: interrupt her mid-sentence to show barge-in.)*
-5. Watch the **"Captured on this call"** card appear on the right — it will show
-   **"→ n8n: delivery systems updated ✓"**. Point at it.
-6. **Switch to your n8n canvas (or webhook.site tab)** — show the workflow lit up / the payload that
-   just landed. **Say** the PROVE-IT-LIVE line: *"…from a live phone call, with nobody touching anything."*
+### 🎬 Scene 3 — ⭐ THE LIVE CALL (1:20–2:20)  ← the star, don't script it
+1. Wait for the agent to greet you in **Tamil**.
+2. **Just talk to her in Tamil** — about any delivery issue (you're travelling, wrong address, etc.).
+   **No script.** Speak clearly and unhurried.
+3. *(Nice flourish: interrupt her mid-sentence once to show barge-in.)*
+4. When the **"Captured on this call"** card appears (showing **"→ n8n: delivery systems updated ✓"**),
+   **pause on it** — that's the outcome being captured.
 
-> This is the whole product working end to end — a live Tamil call updating real systems. Linger here.
+> This is the whole product being real — a live Tamil conversation. Let it breathe; don't narrate over it.
 
-### 🎬 Scene 4 — Benefits + close (2:50–3:35)
-- Back to the dashboard. Point at **"Rescued this session: 3"** and the **₹5.5 Cr** number.
-- **Say** the BENEFITS line, then the **HOW IT WORKS** deep-dive, then: *"That's Project Sampark. Thank you."*
+### 🎬 Scene 4 — ⭐ The proof: n8n + webhook.site (2:20–2:55)
+1. **Switch to your n8n canvas.** **Say** the one-liner: *"This is the automation engine — the second
+   the call ends, it updates every delivery system automatically."* (Point at the workflow.)
+2. **Switch to your webhook.site tab.** Point at the newest entry. **Say:** *"And here's the proof —
+   the outcome of that call is saved right here, nobody touched anything."*
+
+### 🎬 Scene 5 — Benefits + close (2:55–3:15)
+- **Say** the BENEFITS line, then close: *"That's Project Sampark. Thank you."*
 
 ---
 
