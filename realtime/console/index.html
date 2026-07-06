@@ -72,7 +72,17 @@
   .intent { margin:14px 22px 0; padding:11px 15px; border-radius:12px; background:#f2f4f7; color:#667085;
             font-weight:700; font-size:.9rem; display:flex; align-items:center; gap:8px; transition:.2s; }
 
-  .transcript { flex:1; overflow-y:auto; padding:16px 22px; display:flex; flex-direction:column; gap:10px; }
+  .callbody { flex:1; display:flex; min-height:0; }
+  .transcript { flex:1.7; overflow-y:auto; padding:16px 22px; display:flex; flex-direction:column; gap:10px; border-right:1px solid #eef1f6; }
+  .captured { flex:1; overflow-y:auto; padding:16px 18px; background:#fbfcfe; }
+  .cap-title { font-size:.74rem; font-weight:800; color:#344054; text-transform:uppercase; letter-spacing:.5px; margin-bottom:10px; }
+  .cap-empty { color:#98a2b3; font-size:.86rem; }
+  .cap-item { background:#fff; border:1px solid #e6e9ef; border-left:4px solid #12b76a; border-radius:10px;
+              padding:11px 13px; margin-bottom:10px; box-shadow:0 1px 2px rgba(16,24,40,.05); animation:pop .25s ease; }
+  .cap-item .cap-h { font-weight:800; color:#101828; font-size:.92rem; }
+  .cap-item .cap-d { color:#475467; font-size:.85rem; margin-top:4px; line-height:1.4; }
+  .cap-item .cap-ok { color:#12b76a; font-weight:700; font-size:.74rem; margin-top:6px; }
+  @keyframes pop { from{ transform:scale(.96); opacity:0 } to{ transform:scale(1); opacity:1 } }
   .row { display:flex; }
   .row.you { justify-content:flex-end; }
   .bub { max-width:76%; padding:10px 14px; border-radius:16px; font-size:.98rem; line-height:1.45; }
@@ -141,11 +151,13 @@ const INTENT = {
 
 function classify(text){
   const t = (text||"").toLowerCase();
-  const has = (...w) => w.some(x => t.includes(x));
-  if (has("cancel","don't want","dont want","return it")) return "CANCELLED";
-  if (has("address","wrong","floor","landmark","gate","second floor")) return "ADDRESS_FIXED";
-  if (has("no cash","cash nahi","nahi hai","don't have cash","dont have cash","upi","online","card","no money")) return "CONVERTED_PREPAID";
-  if (has("not available","reschedule","tomorrow","kal","busy","travelling","out of town","not home","later","another day")) return "RESCHEDULED";
+  const raw = text || "";
+  // match English/romanized (lowercased) AND Tamil/Hindi script (raw)
+  const has = (...w) => w.some(x => t.includes(x.toLowerCase()) || raw.includes(x));
+  if (has("cancel","venaam","vendaam","வேண்டாம்","don't want","dont want","nahi chahiye")) return "CANCELLED";
+  if (has("address","முகவரி","wrong","thappu","தப்பு","floor","second floor","gate","landmark","galat")) return "ADDRESS_FIXED";
+  if (has("cash","upi","money","online","card","kaasu","panam","காசு","பணம்","paise","nakad")) return "CONVERTED_PREPAID";
+  if (has("reschedule","tomorrow","naalaikku","naalai","நாளைக்கு","நாளை","later","ooru","ஊரு","varen","வரேன்","busy","kal","baad")) return "RESCHEDULED";
   return null;
 }
 
@@ -188,7 +200,13 @@ function showCallView(c){
       </div>
     </div>
     <div class="intent" id="intent">🧠 Listening…</div>
-    <div class="transcript" id="transcript"></div>
+    <div class="callbody">
+      <div class="transcript" id="transcript"></div>
+      <div class="captured">
+        <div class="cap-title">📋 Captured on this call</div>
+        <div id="capList" class="cap-empty" data-empty="1">Nothing yet — outcomes appear here live as Meera resolves the call.</div>
+      </div>
+    </div>
     <div class="controls">
       <button class="ctl mute" id="muteBtn" disabled>🎤 Mute</button>
       <button class="ctl end" id="endBtn">📞 End call</button>
@@ -219,6 +237,28 @@ function setIntent(disp){
   }
 }
 
+// Live "Captured on this call" panel — one card per outcome, updated with the latest detail.
+const CAPTURE = {
+  CONVERTED_PREPAID: ()  => ({icon:"💳", label:"Converting to prepaid", detail:"UPI payment link to be sent on WhatsApp"}),
+  RESCHEDULED:       (t) => ({icon:"🗓️", label:"Delivery rescheduled",   detail:"New slot: “"+t+"”"}),
+  ADDRESS_FIXED:     (t) => ({icon:"📍", label:"Address corrected",       detail:"New address: “"+t+"”"}),
+  CANCELLED:         (t) => ({icon:"🛑", label:"Cancellation requested",  detail:"Reason: “"+t+"”"}),
+};
+function addCapture(disp, text){
+  const info = CAPTURE[disp]; if(!info) return;
+  const d = info(text);
+  const list = $("capList"); if(!list) return;
+  if (list.dataset.empty === "1"){ list.innerHTML=""; list.classList.remove("cap-empty"); list.dataset.empty="0"; }
+  let el = document.getElementById("cap-"+disp);
+  if(!el){
+    el = document.createElement("div"); el.className="cap-item"; el.id="cap-"+disp;
+    el.innerHTML = '<div class="cap-h"></div><div class="cap-d"></div><div class="cap-ok">✔ captured</div>';
+    list.appendChild(el);
+  }
+  el.querySelector(".cap-h").textContent = d.icon + " " + d.label;
+  el.querySelector(".cap-d").textContent = d.detail;
+}
+
 function buildClient(){
   return new PipecatClient({
     transport: new SmallWebRTCTransport(),
@@ -232,7 +272,7 @@ function buildClient(){
         if (d?.final && d.text?.trim()){
           addBubble("you", d.text);
           const disp = classify(d.text);
-          if (disp) setIntent(disp);
+          if (disp){ setIntent(disp); addCapture(disp, d.text); }
         }
       },
       onBotStartedSpeaking: () => { botLine = null; },
@@ -254,7 +294,7 @@ function buildClient(){
 
 async function startCall(key){
   const c = CLIENTS[key];
-  const lang = ($("langSel").value) || c.language;
+  const lang = c.language;   // language is set by the bot (REALTIME_LANG); this is just for requestData
   showCallView(c);
   setLive(false, "connecting…");
   client = buildClient();
