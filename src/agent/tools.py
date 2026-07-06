@@ -74,7 +74,7 @@ TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "convert_to_prepaid",
-            "description": "Convert a COD order to prepaid by sending a UPI payment link on WhatsApp. The single biggest RTO reducer.",
+            "description": "Lock the order as prepaid by sending a UPI payment link on WhatsApp, sweetened with a small incentive (free shipping) so the customer pays now and the order ships today. A COD order's ~30-40% return rate collapses to ~5% once it is prepaid — the single biggest RTO reducer.",
             "parameters": {
                 "type": "object",
                 "properties": {"order_id": {"type": "string"}},

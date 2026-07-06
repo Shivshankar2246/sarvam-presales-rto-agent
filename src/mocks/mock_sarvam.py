@@ -57,9 +57,9 @@ GREETING = {
 
 TOOL_REPLY = {
     "convert_to_prepaid": {
-        "hi-IN": "कोई बात नहीं! मैं अभी आपको WhatsApp पर एक UPI लिंक भेज रही हूँ — GPay या PhonePe से पेमेंट कर दीजिए, फिर डिलीवरी बिना किसी रुकावट के हो जाएगी।",
-        "ta-IN": "பரவாயில்லை! நான் WhatsApp-ல ஒரு UPI லிங்க் அனுப்புறேன் — GPay அல்லது PhonePe-ல பணம் கட்டுங்க, டெலிவரி நல்லா நடக்கும்.",
-        "en-IN": "No problem! I'm sending a UPI link on WhatsApp now — pay via GPay or PhonePe and delivery will go through smoothly.",
+        "hi-IN": "कोई बात नहीं! मैं आपके लिए फ्री शिपिंग लगा देती हूँ और अभी WhatsApp पर एक UPI लिंक भेज रही हूँ — GPay या PhonePe से अभी पे कर दीजिए, ऑर्डर आज ही निकल जाएगा और डिलीवरी के वक़्त कैश की ज़रूरत नहीं।",
+        "ta-IN": "பரவாயில்லை! உங்களுக்கு இலவச ஷிப்பிங் போட்டு, இப்பவே WhatsApp-ல ஒரு UPI லிங்க் அனுப்புறேன் — GPay அல்லது PhonePe-ல இப்பவே பணம் கட்டிடுங்க, ஆர்டர் இன்னைக்கே கிளம்பிடும், டெலிவரி நேரத்துல காசு தேவையில்ல.",
+        "en-IN": "No problem! I'll add free shipping and send a UPI link on WhatsApp now — pay via GPay or PhonePe and your order ships today, with no cash needed at the door.",
     },
     "reschedule_delivery": {
         "hi-IN": "कोई बात नहीं! मैं कल दोपहर के लिए डिलीवरी रीशेड्यूल कर देती हूँ।",

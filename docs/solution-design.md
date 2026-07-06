@@ -42,7 +42,7 @@ systems automatically.
 **The four RTO causes Sampark resolves on the call:**
 1. **Not available** at delivery time → reschedule to a slot the customer confirms.
 2. **Wrong / incomplete address** → capture the correction + a landmark.
-3. **COD not ready** (no cash) → nudge to **prepaid via UPI link** (the single biggest RTO killer) or confirm cash will be ready.
+3. **COD not ready / hesitant** (no cash, or would rather pay online) → **lock the order as prepaid** with a sweetener (free shipping, ships today) + a UPI link on WhatsApp — the single biggest RTO killer, because a paid order removes the free-cancel option — or confirm cash will be ready.
 4. **Changed mind / duplicate / "ordered by mistake"** → capture reason, cancel cleanly (saves the freight instead of shipping a guaranteed return).
 
 It is an **A+B** system:
@@ -124,8 +124,8 @@ different RTO cause so the demo shows range.
 Meera (TTS hi-IN): नमस्ते, मैं ज़िवा से मीरा बोल रही हूँ। आपका ऑर्डर आज डिलीवरी के लिए निकला है —
                    ₹1,450 कैश ऑन डिलीवरी। क्या आप घर पर रहेंगे?
 Customer (STT):    हाँ रहूँगा, लेकिन अभी कैश नहीं है घर पे।
-Meera:             कोई बात नहीं! मैं आपको अभी एक UPI लिंक WhatsApp पर भेज देती हूँ — आप GPay या
-                   PhonePe से ₹1,450 दे सकते हैं, फिर डिलीवरी बिना किसी रुकावट के हो जाएगी। भेज दूँ?
+Meera:             कोई बात नहीं! मैं आपके लिए फ्री शिपिंग लगा देती हूँ और अभी एक UPI लिंक WhatsApp पर
+                   भेज देती हूँ — GPay या PhonePe से ₹1,450 दे दीजिए, ऑर्डर आज ही निकल जाएगा। भेज दूँ?
 Customer:          हाँ भेज दो।
    → TOOL: convert_to_prepaid(order_id)         disposition = CONVERTED_PREPAID
 ```

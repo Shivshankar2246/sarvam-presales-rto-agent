@@ -239,7 +239,7 @@ function setIntent(disp){
 
 // Live "Captured on this call" panel — one card per outcome, updated with the latest detail.
 const CAPTURE = {
-  CONVERTED_PREPAID: ()  => ({icon:"💳", label:"Converting to prepaid", detail:"UPI payment link to be sent on WhatsApp"}),
+  CONVERTED_PREPAID: ()  => ({icon:"💳", label:"Converting to prepaid", detail:"Free shipping + UPI link on WhatsApp · ships today"}),
   RESCHEDULED:       (t) => ({icon:"🗓️", label:"Delivery rescheduled",   detail:"New slot: “"+t+"”"}),
   ADDRESS_FIXED:     (t) => ({icon:"📍", label:"Address corrected",       detail:"New address: “"+t+"”"}),
   CANCELLED:         (t) => ({icon:"🛑", label:"Cancellation requested",  detail:"Reason: “"+t+"”"}),

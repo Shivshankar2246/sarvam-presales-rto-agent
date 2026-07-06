@@ -95,8 +95,8 @@ st.markdown(
 OUTCOME = {
     "CONVERTED_PREPAID": {
         "emoji": "💳", "title": "Converted to Prepaid",
-        "sub": "Customer paid by UPI on the call — this order's return risk just dropped from ~30% to under 2%.",
-        "actions": [("🏬", "Order system", "Marked as prepaid"),
+        "sub": "Agent offered free shipping + a UPI link; customer paid on the call — this order's return risk just dropped from ~30% to under 2%.",
+        "actions": [("🏬", "Order system", "Marked prepaid · free shipping applied"),
                     ("💬", "WhatsApp", "UPI payment link sent"),
                     ("📋", "CRM", "Outcome logged")],
     },

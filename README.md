@@ -82,7 +82,8 @@ python src/run_demo.py --scenario cod_prepaid --mode auto
 ```
 
 You'll see a full **Hindi COD → prepaid** call: greeting → customer says they have no cash → agent
-offers a UPI link → `convert_to_prepaid` tool fires → structured disposition returned for n8n.
+offers **free shipping + a UPI link** to lock the order → `convert_to_prepaid` tool fires → structured
+disposition returned for n8n.
 
 Try the other two scenarios:
 

@@ -159,9 +159,14 @@ STT+TTS+LLM ≈ ₹3–4, telephony + infra ≈ ₹2).
 
 **Two more sources of value not even counted above:**
 
-- **Prepaid conversion.** Every COD order Sampark switches to UPI prepaid drops that order's RTO
-  risk from ~30% to <2%. GoKwik's Pepe Jeans case saw a **20% prepaid uplift**; even a modest
-  conversion rate compounds the savings well beyond the table.
+- **Prepaid conversion.** COD isn't a payment *preference* — it's a *free cancel option*, which is
+  exactly why COD comes back ~30–40% of the time and prepaid ~5–7%. The lever isn't the payment rail,
+  it's **commitment**: once an order is paid, the buyer takes the delivery. So on the call Sampark
+  doesn't just ask "pay now" — it **sweetens it (free shipping, ships today)** and sends a UPI link on
+  WhatsApp, turning "why would I?" into "why wouldn't I?". Every order that flips drops from ~30% RTO
+  risk to <2%. This is a proven category — **GoKwik, Shopflo, Razorpay Magic** exist to do exactly
+  this; GoKwik's Pepe Jeans case saw a **20% prepaid uplift**. Even a modest conversion rate compounds
+  the savings well beyond the table.
 - **Labour avoided.** Achieving 100% COD coverage manually would need a **~30-seat, 10-language,
   24/7 team — ₹15–38 lakh/month** fully loaded. Sampark delivers that coverage as software.
 
