@@ -1,7 +1,8 @@
 # Project Sampark — Architecture
 
 A required deliverable: system diagram showing all components, APIs, and data flows.
-Rendered with Mermaid (GitHub renders this natively). A PNG export lives in `docs/assets/`.
+Rendered with **Mermaid** — GitHub renders it natively in this file; locally, open a Markdown
+preview (Cmd+Shift+V in VS Code) to see the diagram.
 
 ---
 
