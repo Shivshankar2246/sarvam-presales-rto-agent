@@ -46,14 +46,19 @@ st.markdown(
       .kpi .l { font-size:.74rem; color:#667085; text-transform:uppercase; letter-spacing:.5px; font-weight:600; }
       .kpi .v { font-size:1.7rem; font-weight:800; color:#101828; margin-top:2px; }
       .kpi .v.small { font-size:1.25rem; }
-      .ordercard { background:#fff; border:1px solid #eef1f6; border-radius:14px; padding:14px 16px;
-                   box-shadow:0 1px 3px rgba(16,24,40,.06); margin-bottom:10px; }
-      .ordercard .nm { font-weight:700; color:#101828; font-size:1.02rem; }
-      .ordercard .meta { color:#667085; font-size:.86rem; margin-top:2px; }
-      .badge { display:inline-block; padding:2px 10px; border-radius:999px; font-size:.72rem;
-               font-weight:700; margin-left:6px; }
+      /* order cards live inside st.container(border=True); these style the text within */
+      .nm { font-weight:700; color:#101828; font-size:1.12rem; line-height:1.3; margin-bottom:7px; }
+      .badges { margin-bottom:9px; }
+      .meta { color:#475467; font-size:.9rem; line-height:1.5; margin-bottom:7px; }
+      .whyflag { color:#98a2b3; font-size:.8rem; line-height:1.4; margin-bottom:12px; }
+      .whyflag b { color:#667085; font-weight:600; }
+      .badge { display:inline-block; padding:4px 11px; border-radius:999px; font-size:.73rem;
+               font-weight:700; margin-right:7px; }
       .b-lang { background:#eef2ff; color:#4f46e5; }
       .b-risk { background:#fef3f2; color:#d92d20; }
+      /* give the bordered order containers more room + separation */
+      div[data-testid="stVerticalBlockBorderWrapper"] { margin-bottom:12px; }
+      div[data-testid="stVerticalBlockBorderWrapper"] > div { padding:4px 4px 0; }
       .convo { background:#fff; border:1px solid #eef1f6; border-radius:16px; padding:18px 18px 8px;
                box-shadow:0 1px 3px rgba(16,24,40,.06); min-height:120px; }
       .row { display:flex; margin:10px 0; align-items:flex-end; }
@@ -123,6 +128,13 @@ DEFAULT_OUTCOME = {
     "actions": [("👤", "Support queue", "Assigned to an agent"), ("📋", "CRM", "Outcome logged")],
 }
 SAVE_DISPOSITIONS = {"CONVERTED_PREPAID", "RESCHEDULED", "ADDRESS_FIXED", "CANCELLED"}
+
+# Why each order was flagged high-RTO-risk (illustrative signals a risk engine would score).
+RISK_WHY = {
+    "cod_prepaid": "COD payment · first-time buyer · Tier-2 pincode",
+    "reschedule": "COD payment · high-value order · 4-day transit",
+    "address": "COD payment · address flagged incomplete",
+}
 
 
 def wav_seconds(b: bytes) -> float:
@@ -236,15 +248,20 @@ with left:
     triggered = None
     for key, sc in SCENARIOS.items():
         o = sc["order"]
-        st.markdown(
-            f'<div class="ordercard"><div class="nm">{o["customer_name"]}'
-            f'<span class="badge b-lang">{o["language_name"]}</span>'
-            f'<span class="badge b-risk">RTO risk</span></div>'
-            f'<div class="meta">{o["item"]} · ₹{o["cod_amount"]} COD · {o["address"].split(",")[-2].strip() if "," in o["address"] else o["address"]}</div></div>',
-            unsafe_allow_html=True,
-        )
-        if st.button(f"📞 Call {o['customer_name'].split()[0]} now", key=f"btn_{key}"):
-            triggered = key
+        parts = [p.strip() for p in o["address"].split(",")]
+        city = parts[-2] if len(parts) >= 2 else parts[-1]
+        with st.container(border=True):
+            st.markdown(
+                f'<div class="nm">{o["customer_name"]}</div>'
+                f'<div class="badges"><span class="badge b-lang">{o["language_name"]}</span>'
+                f'<span class="badge b-risk">⚠ RTO risk</span></div>'
+                f'<div class="meta">{o["item"]}<br>₹{o["cod_amount"]} Cash-on-Delivery · {city}</div>'
+                f'<div class="whyflag"><b>Why flagged:</b> {RISK_WHY.get(key, "COD order")}</div>',
+                unsafe_allow_html=True,
+            )
+            if st.button(f"📞 Call {o['customer_name'].split()[0]} now",
+                         key=f"btn_{key}", use_container_width=True):
+                triggered = key
 
 with right:
     st.markdown('<div style="font-weight:800;font-size:1.05rem;color:#101828;margin-bottom:8px">'
