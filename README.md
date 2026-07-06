@@ -51,6 +51,26 @@ the [demo video](#-demo-video) walks through.
 
 ---
 
+## 🎙️ Talk to it live — real-time voice agent
+
+Beyond the scripted dashboard, Sampark includes a **genuine real-time, streaming voice call** you
+can talk to: a Zoom-style **Call Console** where you pick a customer, hit **Call**, and have an
+actual back-and-forth phone conversation with Meera — **streaming Saaras STT → sarvam-30b →
+streaming Bulbul TTS**, with **barge-in** (interrupt her mid-sentence). She greets by name in the
+customer's language, understands your **code-mixed Tanglish/Hinglish**, and a live **"Captured"
+panel** shows the outcome as she extracts it (new address, new slot, prepaid, cancellation).
+
+Built on Sarvam's own reference stack (**Pipecat + Sarvam**), fully local over WebRTC — no cloud
+account, ~₹0. Setup + run instructions: **[`realtime/README.md`](realtime/README.md)**.
+
+```bash
+cd realtime && pip install -r requirements.txt      # then add SARVAM_API_KEY to realtime/.env
+python bot.py -t webrtc                              # the real-time voice bot
+cd console && python3 -m http.server 5500            # the Call Console  → open localhost:5500
+```
+
+---
+
 ## 🚀 Developer quickstart (runs in 30 seconds, no API key)
 
 The repo ships an offline **mock** so a reviewer can see the whole flow before adding any key.
@@ -185,6 +205,9 @@ sarvam-presales-rto-agent/
 │   ├── dashboard.py               ← business demo UI (Streamlit) — the CEO-facing console
 │   ├── run_demo.py                ← CLI demo (auto / text / voice)
 │   └── server.py                  ← FastAPI service n8n triggers
+├── realtime/                      ← real-time streaming voice agent (Pipecat + Sarvam)
+│   ├── bot.py                     ← live STT→sarvam-30b→TTS voice bot (barge-in)
+│   └── console/index.html         ← the Call Console web app (talk to Meera live)
 ├── n8n/
 │   ├── BUILD-GUIDE.md             ← step-by-step workflow build
 │   └── sampark-workflow.json      ← importable reference workflow
@@ -213,6 +236,7 @@ fan-out firing.
 | Deliverable | Status |
 |---|---|
 | Working solution — **voice bot + agentic workflow (A+B)** | ✅ Built & verified live |
+| **Real-time streaming voice call** (barge-in, code-mix) | ✅ `realtime/` — Pipecat + Sarvam |
 | Runnable code + README | ✅ This repo — runs via mock or real key |
 | Architecture diagram | ✅ [`docs/architecture.md`](docs/architecture.md) |
 | Business write-up (problem → ROI → rollout) | ✅ [`docs/business-writeup.md`](docs/business-writeup.md) |
