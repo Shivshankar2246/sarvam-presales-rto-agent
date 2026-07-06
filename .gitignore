@@ -26,3 +26,7 @@ _research/
 
 # Generated analytics artifacts
 outputs/*.csv
+
+# realtime voice bot
+realtime/.venv/
+realtime/.env

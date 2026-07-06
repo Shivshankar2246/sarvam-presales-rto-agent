@@ -1,0 +1,7 @@
+# Real-time voice bot (Pipecat + Sarvam). Verified on Pipecat 0.0.108.
+# Install:  pip install -r requirements.txt
+pipecat-ai[sarvam,silero,webrtc,openai]
+pipecat-ai-small-webrtc-prebuilt
+python-dotenv
+fastapi
+uvicorn
