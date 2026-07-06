@@ -12,10 +12,13 @@
       },
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
-      "position": [0, 0],
-      "id": "a1000000-0000-4000-8000-000000000001",
+      "position": [
+        0,
+        -16
+      ],
+      "id": "1153fdd4-53b1-440a-8595-70505c63b76b",
       "name": "Webhook",
-      "webhookId": "sampark-live-resolve-hook"
+      "webhookId": "f08e0344-b8d7-4ec3-8e0f-673c7f50da6c"
     },
     {
       "parameters": {
@@ -23,13 +26,21 @@
           "values": [
             {
               "conditions": {
-                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose", "version": 3 },
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
                 "conditions": [
                   {
-                    "id": "b1000000-0000-4000-8000-000000000001",
+                    "id": "340abce8-dcd2-4449-a15f-627af368b053",
                     "leftValue": "={{ $json.body.disposition }}",
                     "rightValue": "CONVERTED_PREPAID",
-                    "operator": { "type": "string", "operation": "contains" }
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
                   }
                 ],
                 "combinator": "and"
@@ -37,13 +48,21 @@
             },
             {
               "conditions": {
-                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose", "version": 3 },
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
                 "conditions": [
                   {
-                    "id": "b1000000-0000-4000-8000-000000000002",
+                    "id": "f6cac432-81c5-4700-9c4c-3e6e50cb346a",
                     "leftValue": "={{ $json.body.disposition }}",
                     "rightValue": "RESCHEDULED",
-                    "operator": { "type": "string", "operation": "contains" }
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
                   }
                 ],
                 "combinator": "and"
@@ -51,13 +70,21 @@
             },
             {
               "conditions": {
-                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose", "version": 3 },
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
                 "conditions": [
                   {
-                    "id": "b1000000-0000-4000-8000-000000000003",
+                    "id": "4a1a551b-906d-4650-b76a-b960064be40b",
                     "leftValue": "={{ $json.body.disposition }}",
                     "rightValue": "ADDRESS_FIXED",
-                    "operator": { "type": "string", "operation": "contains" }
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
                   }
                 ],
                 "combinator": "and"
@@ -65,13 +92,21 @@
             },
             {
               "conditions": {
-                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose", "version": 3 },
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
                 "conditions": [
                   {
-                    "id": "b1000000-0000-4000-8000-000000000004",
+                    "id": "c681b200-975f-471f-9108-0743eae87d62",
                     "leftValue": "={{ $json.body.disposition }}",
                     "rightValue": "CANCELLED",
-                    "operator": { "type": "string", "operation": "contains" }
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
                   }
                 ],
                 "combinator": "and"
@@ -80,12 +115,17 @@
           ]
         },
         "looseTypeValidation": true,
-        "options": { "fallbackOutput": "extra" }
+        "options": {
+          "fallbackOutput": "extra"
+        }
       },
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.4,
-      "position": [280, -16],
-      "id": "a1000000-0000-4000-8000-000000000002",
+      "position": [
+        672,
+        -64
+      ],
+      "id": "62c394f7-e883-4f0e-83b6-e6ebfc344e8c",
       "name": "Route on Disposition"
     },
     {
@@ -94,28 +134,16 @@
         "url": "https://webhook.site/158bd719-78cd-4ba7-a5cd-c395d30ac570",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"action\": \"mark_prepaid\",\n  \"order_id\": \"{{ $('Webhook').item.json.body.order_id }}\"\n}",
+        "jsonBody": "={ \"action\": \"reschedule\", \"order_id\": \"{{ $('Webhook').item.json.body.order_id }}\", \"requested\": \"{{ $('Webhook').item.json.body.captured }}\" }\n",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
-      "position": [620, -256],
-      "id": "a1000000-0000-4000-8000-000000000003",
-      "name": "OMS: mark prepaid"
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "https://webhook.site/158bd719-78cd-4ba7-a5cd-c395d30ac570",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"action\": \"reschedule\",\n  \"order_id\": \"{{ $('Webhook').item.json.body.order_id }}\",\n  \"requested\": \"{{ $('Webhook').item.json.body.captured }}\"\n}",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.3,
-      "position": [620, -96],
-      "id": "a1000000-0000-4000-8000-000000000004",
+      "position": [
+        1056,
+        -96
+      ],
+      "id": "61f90d5a-230b-4012-a253-59b2a28162b0",
       "name": "3PL: reschedule"
     },
     {
@@ -124,13 +152,16 @@
         "url": "https://webhook.site/158bd719-78cd-4ba7-a5cd-c395d30ac570",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"action\": \"update_address\",\n  \"order_id\": \"{{ $('Webhook').item.json.body.order_id }}\",\n  \"new_address\": \"{{ $('Webhook').item.json.body.captured }}\"\n}",
+        "jsonBody": "={ \"action\": \"update_address\", \"order_id\": \"{{ $('Webhook').item.json.body.order_id }}\", \"new_address\": \"{{ $('Webhook').item.json.body.captured }}\" }\n",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
-      "position": [620, 80],
-      "id": "a1000000-0000-4000-8000-000000000005",
+      "position": [
+        1056,
+        80
+      ],
+      "id": "9a4d073d-5035-49de-9e4c-ff89f40cabd7",
       "name": "OMS: update address"
     },
     {
@@ -139,13 +170,16 @@
         "url": "https://webhook.site/158bd719-78cd-4ba7-a5cd-c395d30ac570",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"action\": \"cancel_and_hold\",\n  \"order_id\": \"{{ $('Webhook').item.json.body.order_id }}\",\n  \"reason\": \"{{ $('Webhook').item.json.body.captured }}\"\n}",
+        "jsonBody": "={ \"action\": \"cancel_and_hold\", \"order_id\": \"{{ $('Webhook').item.json.body.order_id }}\", \"reason\": \"{{ $('Webhook').item.json.body.captured }}\" }\n",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
-      "position": [620, 304],
-      "id": "a1000000-0000-4000-8000-000000000006",
+      "position": [
+        1088,
+        256
+      ],
+      "id": "e2f480dc-ee0b-48b1-b498-fb5d72395607",
       "name": "OMS: cancel + 3PL hold"
     },
     {
@@ -154,13 +188,16 @@
         "url": "https://webhook.site/158bd719-78cd-4ba7-a5cd-c395d30ac570",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"channel\": \"#ndr-escalations\",\n  \"text\": \"Manual follow-up needed for order {{ $('Webhook').item.json.body.order_id }}, disposition {{ $('Webhook').item.json.body.disposition }}\"\n}",
+        "jsonBody": "={ \"channel\": \"#ndr-escalations\", \"text\": \"Manual follow-up for order {{ $('Webhook').item.json.body.order_id }}, disposition {{ $('Webhook').item.json.body.disposition }}\" }\n",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
-      "position": [660, 512],
-      "id": "a1000000-0000-4000-8000-000000000007",
+      "position": [
+        1104,
+        512
+      ],
+      "id": "f0096f75-9388-4a97-87c1-b3feb10f2d27",
       "name": "Slack: human queue"
     },
     {
@@ -169,52 +206,226 @@
         "url": "https://webhook.site/158bd719-78cd-4ba7-a5cd-c395d30ac570",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"order_id\": \"{{ $('Webhook').item.json.body.order_id }}\",\n  \"disposition\": \"{{ $('Webhook').item.json.body.disposition }}\",\n  \"language\": \"{{ $('Webhook').item.json.body.language }}\",\n  \"captured\": \"{{ $('Webhook').item.json.body.captured }}\",\n  \"source\": \"live-call\"\n}",
+        "jsonBody": "={ \"order_id\": \"{{ $('Webhook').item.json.body.order_id }}\", \"disposition\": \"{{ $('Webhook').item.json.body.disposition }}\", \"language\": \"{{ $('Webhook').item.json.body.language }}\", \"captured\": \"{{ $('Webhook').item.json.body.captured }}\" }\n",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
-      "position": [960, -16],
-      "id": "a1000000-0000-4000-8000-000000000008",
+      "position": [
+        1344,
+        -16
+      ],
+      "id": "ba633e9a-562b-473a-ab78-676fbae52881",
       "name": "Log to CRM"
     },
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={ \"ok\": true, \"disposition\": \"{{ $('Webhook').item.json.body.disposition }}\" }",
+        "responseBody": "={ \"ok\": true, \"disposition\": \"{{ $('Webhook').item.json.body.disposition }}\" }\n",
         "options": {}
       },
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
-      "position": [1200, -16],
-      "id": "a1000000-0000-4000-8000-000000000009",
+      "position": [
+        1568,
+        -16
+      ],
+      "id": "939fad9f-a90f-4b52-8127-46933a7b4fe7",
       "name": "Done"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://webhook.site/158bd719-78cd-4ba7-a5cd-c395d30ac570",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"action\": \"mark_prepaid\", \"order_id\": \"{{ $('Webhook').item.json.body.order_id }}\" }\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1088,
+        -256
+      ],
+      "id": "2179d072-1d8f-47aa-9f35-a7e4bf432c4d",
+      "name": "OMS: mark prepaid"
     }
   ],
-  "pinData": {},
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n.srv1137156.hstgr.cloud",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
+            "content-length": "286",
+            "accept": "*/*",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept-language": "en-US,en;q=0.9",
+            "content-type": "application/json",
+            "origin": "http://localhost:5500",
+            "priority": "u=1, i",
+            "referer": "http://localhost:5500/",
+            "sec-ch-ua": "\"Google Chrome\";v=\"149\", \"Chromium\";v=\"149\", \"Not)A;Brand\";v=\"24\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"macOS\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "cross-site",
+            "x-forwarded-for": "172.18.0.1",
+            "x-forwarded-host": "n8n.srv1137156.hstgr.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "e33a52f43b9c",
+            "x-real-ip": "172.18.0.1"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "order_id": "RVT-50934",
+            "customer_name": "Lakshmi Narayanan",
+            "language": "ta-IN",
+            "disposition": "RESCHEDULED",
+            "captured": "நீங்க நான் வீட்ல இல்ல நீங்க நாளைக்கு ஒரு 3 o'clock பண்ணுங்க.",
+            "source": "live-call"
+          },
+          "webhookUrl": "https://n8n.srv1137156.hstgr.cloud/webhook/sampark-live-resolve",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
   "connections": {
     "Webhook": {
-      "main": [[{ "node": "Route on Disposition", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Route on Disposition",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Route on Disposition": {
       "main": [
-        [{ "node": "OMS: mark prepaid", "type": "main", "index": 0 }],
-        [{ "node": "3PL: reschedule", "type": "main", "index": 0 }],
-        [{ "node": "OMS: update address", "type": "main", "index": 0 }],
-        [{ "node": "OMS: cancel + 3PL hold", "type": "main", "index": 0 }],
-        [{ "node": "Slack: human queue", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "OMS: mark prepaid",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "3PL: reschedule",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "OMS: update address",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "OMS: cancel + 3PL hold",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Slack: human queue",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
-    "OMS: mark prepaid": { "main": [[{ "node": "Log to CRM", "type": "main", "index": 0 }]] },
-    "3PL: reschedule": { "main": [[{ "node": "Log to CRM", "type": "main", "index": 0 }]] },
-    "OMS: update address": { "main": [[{ "node": "Log to CRM", "type": "main", "index": 0 }]] },
-    "OMS: cancel + 3PL hold": { "main": [[{ "node": "Log to CRM", "type": "main", "index": 0 }]] },
-    "Slack: human queue": { "main": [[{ "node": "Log to CRM", "type": "main", "index": 0 }]] },
-    "Log to CRM": { "main": [[{ "node": "Done", "type": "main", "index": 0 }]] }
+    "3PL: reschedule": {
+      "main": [
+        [
+          {
+            "node": "Log to CRM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OMS: update address": {
+      "main": [
+        [
+          {
+            "node": "Log to CRM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OMS: cancel + 3PL hold": {
+      "main": [
+        [
+          {
+            "node": "Log to CRM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack: human queue": {
+      "main": [
+        [
+          {
+            "node": "Log to CRM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log to CRM": {
+      "main": [
+        [
+          {
+            "node": "Done",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OMS: mark prepaid": {
+      "main": [
+        [
+          {
+            "node": "Log to CRM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
   },
-  "active": false,
+  "active": true,
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "availableInMCP": false
   },
+  "versionId": "c27750d3-af1c-4af0-82a6-aeac61e3ffec",
+  "meta": {
+    "instanceId": "1b868881354dcf124279904ace49e4a08ba36f08cc437605ecd40fac2e3a5f66"
+  },
+  "id": "b19hUFFswSaam5UaE-Lhf",
   "tags": []
 }
