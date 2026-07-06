@@ -19,7 +19,8 @@ from dotenv import load_dotenv
 from loguru import logger
 
 from pipecat.audio.vad.silero import SileroVADAnalyzer
-from pipecat.frames.frames import LLMRunFrame, TranscriptionFrame
+from pipecat.audio.vad.vad_analyzer import VADParams
+from pipecat.frames.frames import LLMRunFrame, TranscriptionFrame, TTSSpeakFrame
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
 from pipecat.pipeline.task import PipelineParams, PipelineTask
@@ -43,9 +44,24 @@ load_dotenv(override=True)
 SARVAM_API_KEY = os.getenv("SARVAM_API_KEY")
 DEFAULT_LANG = os.getenv("REALTIME_LANG", "en-IN")
 
+# Wait ~1.5s of silence before ending the caller's turn — stops Saaras from chopping a
+# sentence into 1-2 word fragments (which also wrecks accuracy). Tune via env if needed.
+_VAD_STOP_SECS = float(os.getenv("VAD_STOP_SECS", "1.5"))
+
+
+def make_vad() -> SileroVADAnalyzer:
+    return SileroVADAnalyzer(params=VADParams(stop_secs=_VAD_STOP_SECS))
+
 _STT_LANG = {"en-IN": Language.EN_IN, "hi-IN": Language.HI_IN, "ta-IN": Language.TA_IN}
 _TTS_LANG = {"en-IN": Language.EN, "hi-IN": Language.HI, "ta-IN": Language.TA}
 _VOICE = {"en-IN": "anushka", "hi-IN": "anushka", "ta-IN": "vidya"}
+
+# Fixed opening line, spoken straight through TTS (bypasses the LLM so the greeting is guaranteed).
+_GREETING = {
+    "hi-IN": "नमस्ते! मैं रिवायत से मीरा बोल रही हूँ। आपका ऑर्डर आज डिलीवरी के लिए निकला है — क्या आप घर पर उपलब्ध रहेंगे?",
+    "ta-IN": "வணக்கம்! நான் ரிவாயத்-ல் இருந்து மீரா பேசுறேன். உங்க ஆர்டர் இன்னைக்கு டெலிவரிக்கு வந்துருக்கு — நீங்க வீட்ல இருப்பீங்களா?",
+    "en-IN": "Hello! This is Meera from Rivaayat about your order that's out for delivery today. Will you be available to receive it?",
+}
 
 
 def build_system_prompt(ctx: dict) -> str:
@@ -104,12 +120,14 @@ class IntentClassifier(FrameProcessor):
 
 
 async def run_bot(transport: BaseTransport, runner_args: RunnerArguments, ctx: dict):
+    # Per-call language if it arrived; else the env default (REALTIME_LANG). Default is regional.
     lang = ctx.get("language") or DEFAULT_LANG
     name = ctx.get("customer_name") or "the customer"
     logger.info(f"📞 Call connected · customer={name} · language={lang}")
 
     stt = SarvamSTTService(
         api_key=SARVAM_API_KEY,
+        mode="codemix",   # keep Tanglish/Hinglish faithful — top-level kwarg, not a Setting
         settings=SarvamSTTService.Settings(
             model="saaras:v3",
             language=_STT_LANG.get(lang, Language.EN_IN),
@@ -133,7 +151,7 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments, ctx: d
     context.add_message({"role": "system", "content": build_system_prompt(ctx)})
     user_aggregator, assistant_aggregator = LLMContextAggregatorPair(
         context,
-        user_params=LLMUserAggregatorParams(vad_analyzer=SileroVADAnalyzer()),
+        user_params=LLMUserAggregatorParams(vad_analyzer=make_vad()),
     )
 
     pipeline = Pipeline(
@@ -160,13 +178,8 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments, ctx: d
 
     @transport.event_handler("on_client_connected")
     async def on_client_connected(transport, client):
-        context.add_message(
-            {"role": "developer",
-             "content": f"The call just connected. Greet {name} warmly by name in one short "
-                        "sentence, say you're from Rivaayat about today's delivery, and ask if "
-                        "they'll be available to receive it."}
-        )
-        await task.queue_frames([LLMRunFrame()])
+        # Speak a fixed greeting directly through TTS — guaranteed, no LLM dependency.
+        await task.queue_frames([TTSSpeakFrame(_GREETING.get(lang, _GREETING["en-IN"]))])
 
     @transport.event_handler("on_client_disconnected")
     async def on_client_disconnected(transport, client):
@@ -180,11 +193,12 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments, ctx: d
 async def bot(runner_args: RunnerArguments):
     # Per-call context from the browser's requestData (customer_name, item, cod_amount, language)
     ctx = getattr(runner_args, "body", None) or {}
+    logger.info(f"🔎 Per-call context (runner_args.body) = {ctx!r}")
     transport_params = {
         "webrtc": lambda: TransportParams(
             audio_in_enabled=True,
             audio_out_enabled=True,
-            vad_analyzer=SileroVADAnalyzer(),
+            vad_analyzer=make_vad(),
         ),
     }
     transport = await create_transport(runner_args, transport_params)
