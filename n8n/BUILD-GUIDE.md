@@ -221,7 +221,9 @@ APIs. For all of them: Method `POST`, Send Body `JSON`.
 ## Node 11 — Respond to Webhook
 
 1. Add node → **Respond to Webhook** → rename **`Done`**.
-2. **Respond With:** `JSON` → Body: `={{ { "ok": true, "disposition": $('Call Voice Agent').item.json.disposition } }}`
+2. **Respond With:** `JSON` → Body (literal JSON, `{{ }}` **inside** the quotes — the object-expression
+   form `={{ {...} }}` throws *"Invalid JSON in Response Body"* here):
+   `{ "ok": true, "disposition": "{{ $('Call Voice Agent').item.json.disposition }}" }`
 3. Connect **Log to CRM → Done**.
 
 ---
