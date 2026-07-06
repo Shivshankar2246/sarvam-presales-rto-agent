@@ -122,19 +122,20 @@ not a chatbot.
             ▼                                                                       ▼
    ┌──────────────────┐     writes the fix back, automatically            (customer's phone)
    │  AGENTIC BACKEND │  ── n8n → updates OMS · instructs courier (3PL) ──
-   │  (n8n)           │       · sends WhatsApp confirmation · logs to CRM
-   └──────────────────┘       · escalates edge cases to a human
+   │  (n8n)           │       · logs to CRM · escalates edge cases to a human
+   └──────────────────┘
 ```
 
 In plain terms: **the call doesn't end in a note for someone to action later — it ends in the
-system already being updated.** A COD order that converts to prepaid on the call is flipped to
-prepaid in the OMS and the UPI link is on the customer's WhatsApp before they've hung up. *(Full
-technical diagram: `docs/architecture.md`.)*
+system already being updated.** The instant Meera settles the outcome on the call, the live
+**Call Console pushes it to n8n**, which flips the OMS, instructs the courier, and logs the CRM
+before the customer has hung up. *(Full technical diagram: `docs/architecture.md`.)*
 
 The voice agent runs as a **genuine real-time, streaming call** — the customer speaks, Meera
 listens, understands their code-mixed speech, and replies in the same breath, with natural
-interruption (barge-in). It's the same experience as a human tele-caller, at software cost and
-scale. *(Live demo: the Call Console in `realtime/`.)*
+interruption (barge-in). This live call is what **drives the agentic backend** — verified
+end-to-end: a live Tamil call → captured outcome → n8n fan-out. It's the same experience as a
+human tele-caller, at software cost and scale. *(Live demo: the Call Console in `realtime/`.)*
 
 ---
 

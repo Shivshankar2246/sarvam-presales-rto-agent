@@ -37,8 +37,10 @@ Full business case with the ROI model: **[`docs/business-writeup.md`](docs/busin
 ## 🖥️ See it in action — the Delivery Rescue Console
 
 The business-facing way to experience Sampark: a clean dashboard where you **click "Call now" on an
-at-risk order and watch (and hear) the AI rescue it** in the customer's language — then see the
-systems it updated, in plain English. Built for a non-technical audience (COO / VP Ops).
+at-risk order and watch (and hear) the AI rescue it** in the customer's language — then see, in plain
+English, the downstream actions each rescue triggers. Built for a non-technical audience (COO / VP
+Ops). *(This is the polished business showcase; the **live Call Console** below is where a real call
+actually drives the n8n backend.)*
 
 ```bash
 pip install -r requirements.txt
@@ -58,7 +60,9 @@ can talk to: a Zoom-style **Call Console** where you pick a customer, hit **Call
 actual back-and-forth phone conversation with Meera — **streaming Saaras STT → sarvam-30b →
 streaming Bulbul TTS**, with **barge-in** (interrupt her mid-sentence). She greets by name in the
 customer's language, understands your **code-mixed Tanglish/Hinglish**, and a live **"Captured"
-panel** shows the outcome as she extracts it (new address, new slot, prepaid, cancellation).
+panel** shows the outcome as she extracts it (new address, new slot, prepaid, cancellation) — and
+**each captured outcome pushes straight to n8n**, firing the OMS/3PL/CRM fan-out live (the A+B path
+below).
 
 Built on Sarvam's own reference stack (**Pipecat + Sarvam**), fully local over WebRTC — no cloud
 account, ~₹0. Setup + run instructions: **[`realtime/README.md`](realtime/README.md)**.
@@ -122,8 +126,22 @@ client automatically — same code path, no flags.
 ## 🧩 The agentic backend (n8n) — full A+B
 
 The voice bot is only half. Every call ends in a structured disposition that an **n8n** workflow
-fans out to the brand's systems — OMS, 3PL courier, WhatsApp, CRM, and a human queue for edge
-cases. This is what makes it an enterprise system, not a chatbot.
+fans out to the brand's systems — OMS, 3PL courier, CRM, and a human queue for edge cases. This is
+what makes it an enterprise system, not a chatbot. The disposition reaches n8n **two ways**:
+
+**① Live (the A+B centerpiece — verified end-to-end).** The real-time Call Console *is* the call:
+the moment Meera captures the outcome, the browser POSTs it to n8n, which routes and fans out — no
+second call, no human in the loop. The captured card shows `→ n8n: delivery systems updated ✓` as it
+fires.
+
+> **live Tamil call** → agent captures the outcome → **POST `/sampark-live-resolve`** → Switch routes
+> the disposition → **OMS · 3PL · CRM · human queue** updated. ✅ *Built and run end-to-end on a
+> self-hosted n8n instance.*
+
+Import **[`n8n/sampark-live-resolve.json`](n8n/sampark-live-resolve.json)**, activate it, and make a
+call from the Console (see [`realtime/README.md`](realtime/README.md)).
+
+**② Batch / outbound.** An OMS "out for delivery" event triggers n8n, which places the call itself:
 
 ```bash
 # 1. Run the voice service that n8n calls:
@@ -135,19 +153,15 @@ curl -X POST localhost:8000/trigger-call -H 'content-type: application/json' \
      -d @samples/trigger_cod_prepaid.json
 ```
 
-Build the n8n workflow by following **[`n8n/BUILD-GUIDE.md`](n8n/BUILD-GUIDE.md)** (step-by-step,
-node-by-node), or import **[`n8n/sampark-workflow.json`](n8n/sampark-workflow.json)** as a
-reference. The end-to-end triggered sequence:
+Build it step-by-step via **[`n8n/BUILD-GUIDE.md`](n8n/BUILD-GUIDE.md)**, or import
+**[`n8n/sampark-workflow.json`](n8n/sampark-workflow.json)**. The triggered sequence:
 
 > **event** (out for delivery) → **agent reasons** (in-language voice) → **tool called**
-> (reschedule / fix address / convert to prepaid) → **downstream updated** (OMS · 3PL · WhatsApp ·
-> CRM) — exactly the flow the assignment asks for.
+> (reschedule / fix address / convert to prepaid / cancel) → **downstream updated**
+> (OMS · 3PL · CRM · human queue) — exactly the flow the assignment asks for.
 
-> ✅ **Verified live end-to-end.** This was built and run on a self-hosted n8n instance: an OMS
-> webhook fired the trigger → n8n called the voice service → `sarvam-30b` ran a real Hindi
-> conversation and called `convert_to_prepaid` → the Switch routed on the disposition → the OMS /
-> WhatsApp / CRM nodes posted the resolution downstream. (When n8n is remote, the local voice
-> service is exposed via a Cloudflare tunnel — see the build guide.)
+*(When n8n is remote, the local voice service is exposed via a Cloudflare tunnel — see the build
+guide.)*
 
 ---
 
@@ -208,10 +222,11 @@ sarvam-presales-rto-agent/
 │   └── server.py                  ← FastAPI service n8n triggers
 ├── realtime/                      ← real-time streaming voice agent (Pipecat + Sarvam)
 │   ├── bot.py                     ← live STT→sarvam-30b→TTS voice bot (barge-in)
-│   └── console/index.html         ← the Call Console web app (talk to Meera live)
+│   └── console/index.html         ← the Call Console — talk to Meera live + push to n8n
 ├── n8n/
-│   ├── BUILD-GUIDE.md             ← step-by-step workflow build
-│   └── sampark-workflow.json      ← importable reference workflow
+│   ├── BUILD-GUIDE.md             ← step-by-step workflow build (+ Live Resolve section)
+│   ├── sampark-workflow.json      ← batch workflow (event → n8n places the call)
+│   └── sampark-live-resolve.json  ← live workflow (Call Console → n8n fan-out) — the A+B path
 ├── docs/
 │   ├── business-writeup.md        ← the pre-sales artifact (problem → ROI → rollout)
 │   ├── architecture.md            ← system diagram + data flow
@@ -247,8 +262,9 @@ fan-out firing.
 | Post-call analytics pipeline *(optional)* | ✅ [`src/analytics/`](src/analytics/) |
 | Demo video | 🎥 see link above |
 
-The **n8n agentic backend was built and run end-to-end on a self-hosted n8n instance**: webhook
-trigger → real Sarvam Hindi call → tool-call → disposition routing → OMS/WhatsApp/CRM fan-out.
+The **n8n agentic backend was built and run end-to-end on a self-hosted n8n instance** — both ways:
+a **live Call Console call → `/sampark-live-resolve` → OMS/3PL/CRM fan-out** (the A+B centerpiece),
+and the batch webhook trigger → real Sarvam call → tool-call → disposition routing → fan-out.
 
 ---
 

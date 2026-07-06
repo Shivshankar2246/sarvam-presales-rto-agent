@@ -153,8 +153,8 @@ The response body now contains:
 ## Node 5–9 — Downstream actions (HTTP Request nodes)
 
 For each branch, add an **HTTP Request** node. For the PoC, set every URL to your
-**webhook.site** URL (so you can watch them fire); in production these become real OMS/3PL/
-WhatsApp APIs. For all of them: Method `POST`, Send Body `JSON`.
+**webhook.site** URL (so you can watch them fire); in production these become real OMS/3PL/CRM
+APIs. For all of them: Method `POST`, Send Body `JSON`.
 
 > ⚠️ **CRITICAL — read the voice-service response with a NODE REFERENCE, not `$json`.**
 > In n8n, `$json` is only the output of the *immediately preceding* node. So in "Log to CRM"

@@ -19,7 +19,6 @@ flowchart TB
         TRIG{{"Webhook trigger\nOUT_FOR_DELIVERY /\nNDR_ATTEMPT_FAILED"}}
         ENR["Enrich order context"]
         ROUTE{"Route on\ndisposition"}
-        WA["WhatsApp\nconfirmation"]
         CRM["CRM / Google Sheet\nops dashboard"]
         ESC["Human queue\nSlack / CRM task"]
         TPL["Notify 3PL\nreschedule · hold · cancel"]
@@ -49,9 +48,9 @@ flowchart TB
     TTS -->|audio| LOOP
     LLM -->|tool call| TOOLS
     TOOLS -->|disposition JSON| ROUTE
+    CONSOLE["Live Call Console\n(browser)"] -->|captured outcome\nPOST /sampark-live-resolve| ROUTE
     ROUTE --> OMS
     ROUTE --> TPL
-    ROUTE --> WA
     ROUTE --> CRM
     ROUTE --> ESC
     LOOP -.->|transcript + audio| AN
@@ -76,9 +75,9 @@ flowchart TB
    (TTS)** — all in the customer's language.
 5. **Act** — when the model decides a resolution, it emits a **tool call**; the tool executor runs
    it and the agent confirms verbally.
-6. **Fan-out** — the structured disposition returns to n8n, which conditionally updates the OMS,
-   instructs the 3PL, sends a WhatsApp confirmation, logs to CRM/Sheet, and escalates ambiguous
-   calls to a human.
+6. **Fan-out** — the structured disposition reaches n8n, which conditionally updates the OMS,
+   instructs the 3PL, logs to CRM/Sheet, and escalates ambiguous calls to a human. The disposition
+   arrives one of two ways (see below).
 7. **Analytics (optional)** — the call audio + transcript feed a batch STT + diarization + LLM
    pipeline that tags disposition and surfaces objection patterns for ops.
 
@@ -92,6 +91,20 @@ variant** in `realtime/` — built on **Pipecat + Sarvam** over WebRTC — where
 TTS stream continuously and the caller can **interrupt mid-sentence (barge-in)**, exactly like a
 live phone call. Same brain (`sarvam-30b`), same four RTO resolutions; the streaming path is what
 the live **Call Console** demo uses.
+
+## Two ways the disposition reaches n8n
+
+The same fan-out (Route on Disposition → OMS · 3PL · CRM · human queue) is fed by two entry points —
+both are real product modes:
+
+| Mode | Workflow | How it starts | Voice call |
+|---|---|---|---|
+| **Batch / outbound** | `n8n/sampark-workflow.json` (`/sampark-trigger`) | An OMS/3PL order event hits n8n; n8n **places** the call (HTTP → `/trigger-call`) | n8n dials |
+| **Live (A+B)** | `n8n/sampark-live-resolve.json` (`/sampark-live-resolve`) | The **live Call Console** captures the outcome mid-call and POSTs it to n8n | call already happened live |
+
+The **Live** path is the A+B centerpiece and is **verified end-to-end**: a live Tamil call in the
+Call Console → the captured disposition POSTs to `/sampark-live-resolve` → the Switch routes it →
+OMS/3PL/CRM nodes fire. No second call, no human in the loop.
 
 ---
 

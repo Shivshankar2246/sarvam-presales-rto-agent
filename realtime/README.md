@@ -30,7 +30,16 @@ Open **http://localhost:5500** → pick a customer → **📞 Call now** → all
 - Meera greets that customer **by name in their language**, live.
 - Watch the **live transcript** + the **🧠 Detected intent** chip update as you speak.
 - **Mute / End call** controls, a live call timer, barge-in — like a real call screen.
-- Optional: set **"Agent speaks"** (top-right) to force English/Hindi/Tamil.
+- The **"Captured on this call"** panel fills in as Meera resolves the outcome — and each captured
+  card **pushes to n8n** (`→ n8n: delivery systems updated ✓`), firing the OMS/3PL/CRM fan-out live.
+
+### The A+B wiring (live call → n8n)
+The moment the agent captures a disposition, the Console POSTs
+`{ order_id, disposition, captured }` to the n8n **Live Resolve** workflow
+(`n8n/sampark-live-resolve.json`, webhook `/sampark-live-resolve`), which routes it and updates the
+delivery systems — no second call, no human in the loop. The endpoint is set by `N8N_LIVE_URL` in
+`console/index.html` (override at runtime with `?n8n=<url>`). This is the fused **A+B** demo, and
+it's verified end-to-end. See `n8n/BUILD-GUIDE.md` → *"Live Resolve"*.
 
 ## Or the bare dev client
 Open **http://localhost:7860/client** → **Connect** → **allow the mic** → talk. (Pipecat's generic

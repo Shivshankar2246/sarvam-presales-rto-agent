@@ -47,7 +47,7 @@ systems automatically.
 
 It is an **A+B** system:
 - **A — Voice bot:** Sarvam **STT (Saaras `saaras:v3`)** → **LLM (`sarvam-30b`, OpenAI-compatible tool-calling)** → **TTS (Bulbul `bulbul:v3`)**, fully in the customer's language, code-mixing aware (Hinglish/Tanglish).
-- **B — Agentic backend (n8n):** ingests the trigger, enriches order context, invokes the voice agent, then on the structured call outcome fans out downstream: update OMS, instruct the 3PL (reschedule/hold/cancel), send WhatsApp confirmation, log to CRM, and escalate ambiguous calls to a human.
+- **B — Agentic backend (n8n):** on the structured call outcome, fans out downstream — update OMS, instruct the 3PL (reschedule/hold/cancel), log to CRM, and escalate ambiguous calls to a human. The disposition reaches n8n **two ways**: the **batch** workflow (`sampark-trigger`) where n8n places the call itself, and the **live** workflow (`sampark-live-resolve`) where the real-time Call Console POSTs the captured outcome mid-call — the A+B path, verified end-to-end.
 
 ---
 
@@ -76,7 +76,6 @@ It is an **A+B** system:
 [6] FAN-OUT          n8n downstream (conditional):
         │              • Update OMS order (slot / address / status / prepaid flag)
         │              • Notify 3PL: reschedule | hold | cancel (saves a doomed dispatch)
-        │              • WhatsApp the customer a confirmation in their language
         │              • Append row to CRM / Google Sheet (ops dashboard)
         │              • If ambiguous/angry/high-value → human queue (Slack/CRM task)
         │
@@ -86,6 +85,12 @@ It is an **A+B** system:
 
 Mock data is fine for the PoC — the **flow** is the deliverable: an event fires, the agent
 reasons in-language, a tool executes, and a downstream system is updated.
+
+> **Live variant (the A+B path, verified).** Steps [1]–[3] above are the *batch* mode where n8n
+> places the call. In the **live** mode, the real-time Call Console *is* the call: the moment Meera
+> captures the outcome, the browser POSTs `{ order_id, disposition, captured }` to
+> `n8n /sampark-live-resolve`, which jumps straight to **[6] FAN-OUT** — no dial-out, no second call.
+> Same downstream, driven by the live conversation. This is what fuses A and B into one system.
 
 ---
 
@@ -104,7 +109,7 @@ the moment a resolution is decided. Keep turns short — this is a phone call."
 |---|---|---|
 | `reschedule_delivery` | `order_id, preferred_slot` | OMS slot update + 3PL reschedule |
 | `update_address` | `order_id, corrected_address, landmark` | OMS address update + 3PL re-route |
-| `convert_to_prepaid` | `order_id` | Generate UPI link, WhatsApp it, flag prepaid |
+| `convert_to_prepaid` | `order_id` | Send UPI payment link (free-shipping sweetener), flag prepaid in OMS |
 | `cancel_order` | `order_id, reason` | OMS cancel + 3PL hold (avoid the doomed dispatch) |
 | `schedule_callback` | `order_id, callback_time` | Re-queue the call |
 | `escalate_to_human` | `order_id, reason` | Create human task (Slack/CRM) |
@@ -170,11 +175,12 @@ These three are the spine of the 3–5 min demo video.
 
 ## 7. Scope of the PoC vs production (for the write-up's "Limitations" section)
 
-**In the PoC:** the full A+B flow runs end-to-end on mock order data — trigger → in-language
-voice conversation (real Sarvam STT/LLM/TTS) → tool call → n8n downstream update → WhatsApp/Sheet.
-The voice bot ships in **two forms**: a turn-based service (`src/`, drives the dashboard + n8n
-pipeline) and a **real-time streaming, barge-in call** (`realtime/`, Pipecat + Sarvam over WebRTC)
-you can actually talk to. Telephony is mockable or wired to Plivo/Exotel.
+**In the PoC:** the full A+B flow runs end-to-end on mock order data — in-language voice
+conversation (real Sarvam STT/LLM/TTS) → captured disposition → n8n downstream update (OMS/3PL/CRM).
+The voice bot ships in **two forms**: a turn-based service (`src/`, drives the dashboard + the batch
+n8n pipeline) and a **real-time streaming, barge-in call** (`realtime/`, Pipecat + Sarvam over
+WebRTC) you can actually talk to — and it's this **live call that drives n8n** (`sampark-live-resolve`),
+verified end-to-end with a live Tamil call. Telephony is mockable or wired to Plivo/Exotel.
 
 **For production (90-day rollout):** real telephony at scale + concurrency, OMS/3PL API
 integrations (Unicommerce/Increff + Delhivery/Shadowfax), DPDP-compliant consent + DND handling,
