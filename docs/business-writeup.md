@@ -131,6 +131,11 @@ system already being updated.** A COD order that converts to prepaid on the call
 prepaid in the OMS and the UPI link is on the customer's WhatsApp before they've hung up. *(Full
 technical diagram: `docs/architecture.md`.)*
 
+The voice agent runs as a **genuine real-time, streaming call** — the customer speaks, Meera
+listens, understands their code-mixed speech, and replies in the same breath, with natural
+interruption (barge-in). It's the same experience as a human tele-caller, at software cost and
+scale. *(Live demo: the Call Console in `realtime/`.)*
+
 ---
 
 ## 5. ROI / Business Case
@@ -175,8 +180,10 @@ multi-quarter ramp to value.
 
 **What the PoC is — and isn't.** The proof-of-concept runs the full loop end-to-end on **mock
 order data**: an event triggers the call, the agent converses in-language using real Sarvam
-STT/LLM/TTS, calls a tool, and n8n fans the result out. It is **not** yet wired to live telephony
-at scale or to production OMS/3PL APIs — by design, to keep the demo runnable and reviewable.
+STT/LLM/TTS, calls a tool, and n8n fans the result out. The conversation runs as a **real-time,
+streaming, barge-in call** (Pipecat + Sarvam over WebRTC — see `realtime/`). What's **not** yet
+wired: **PSTN telephony at scale** (a real phone number via Plivo/Exotel, concurrency) and
+production OMS/3PL APIs — by design, to keep the demo runnable and reviewable.
 
 **For a production rollout, the gaps to close:**
 

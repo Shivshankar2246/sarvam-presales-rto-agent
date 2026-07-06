@@ -83,6 +83,17 @@ flowchart TB
 
 ---
 
+## Two voice implementations
+
+The **Voice service** above is turn-based (record → Saaras → sarvam-30b → Bulbul), which is ideal
+for the dashboard and the n8n-triggered pipeline. Sampark also ships a **real-time, streaming
+variant** in `realtime/` — built on **Pipecat + Sarvam** over WebRTC — where Saaras STT and Bulbul
+TTS stream continuously and the caller can **interrupt mid-sentence (barge-in)**, exactly like a
+live phone call. Same brain (`sarvam-30b`), same four RTO resolutions; the streaming path is what
+the live **Call Console** demo uses.
+
+---
+
 ## Which Sarvam APIs and why
 
 | API | Used for | Why it's core (not an afterthought) |

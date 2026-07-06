@@ -172,7 +172,9 @@ These three are the spine of the 3–5 min demo video.
 
 **In the PoC:** the full A+B flow runs end-to-end on mock order data — trigger → in-language
 voice conversation (real Sarvam STT/LLM/TTS) → tool call → n8n downstream update → WhatsApp/Sheet.
-Telephony is mockable (run from mic/CLI) or wired to Plivo/Exotel.
+The voice bot ships in **two forms**: a turn-based service (`src/`, drives the dashboard + n8n
+pipeline) and a **real-time streaming, barge-in call** (`realtime/`, Pipecat + Sarvam over WebRTC)
+you can actually talk to. Telephony is mockable or wired to Plivo/Exotel.
 
 **For production (90-day rollout):** real telephony at scale + concurrency, OMS/3PL API
 integrations (Unicommerce/Increff + Delhivery/Shadowfax), DPDP-compliant consent + DND handling,
