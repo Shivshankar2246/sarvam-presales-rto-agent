@@ -1,0 +1,220 @@
+{
+  "name": "Sampark — Live Resolve",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "sampark-live-resolve",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [0, 0],
+      "id": "a1000000-0000-4000-8000-000000000001",
+      "name": "Webhook",
+      "webhookId": "sampark-live-resolve-hook"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose", "version": 3 },
+                "conditions": [
+                  {
+                    "id": "b1000000-0000-4000-8000-000000000001",
+                    "leftValue": "={{ $json.body.disposition }}",
+                    "rightValue": "CONVERTED_PREPAID",
+                    "operator": { "type": "string", "operation": "contains" }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose", "version": 3 },
+                "conditions": [
+                  {
+                    "id": "b1000000-0000-4000-8000-000000000002",
+                    "leftValue": "={{ $json.body.disposition }}",
+                    "rightValue": "RESCHEDULED",
+                    "operator": { "type": "string", "operation": "contains" }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose", "version": 3 },
+                "conditions": [
+                  {
+                    "id": "b1000000-0000-4000-8000-000000000003",
+                    "leftValue": "={{ $json.body.disposition }}",
+                    "rightValue": "ADDRESS_FIXED",
+                    "operator": { "type": "string", "operation": "contains" }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose", "version": 3 },
+                "conditions": [
+                  {
+                    "id": "b1000000-0000-4000-8000-000000000004",
+                    "leftValue": "={{ $json.body.disposition }}",
+                    "rightValue": "CANCELLED",
+                    "operator": { "type": "string", "operation": "contains" }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": { "fallbackOutput": "extra" }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [280, -16],
+      "id": "a1000000-0000-4000-8000-000000000002",
+      "name": "Route on Disposition"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://webhook.site/158bd719-78cd-4ba7-a5cd-c395d30ac570",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"action\": \"mark_prepaid\",\n  \"order_id\": \"{{ $('Webhook').item.json.body.order_id }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [620, -256],
+      "id": "a1000000-0000-4000-8000-000000000003",
+      "name": "OMS: mark prepaid"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://webhook.site/158bd719-78cd-4ba7-a5cd-c395d30ac570",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"action\": \"reschedule\",\n  \"order_id\": \"{{ $('Webhook').item.json.body.order_id }}\",\n  \"requested\": \"{{ $('Webhook').item.json.body.captured }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [620, -96],
+      "id": "a1000000-0000-4000-8000-000000000004",
+      "name": "3PL: reschedule"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://webhook.site/158bd719-78cd-4ba7-a5cd-c395d30ac570",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"action\": \"update_address\",\n  \"order_id\": \"{{ $('Webhook').item.json.body.order_id }}\",\n  \"new_address\": \"{{ $('Webhook').item.json.body.captured }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [620, 80],
+      "id": "a1000000-0000-4000-8000-000000000005",
+      "name": "OMS: update address"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://webhook.site/158bd719-78cd-4ba7-a5cd-c395d30ac570",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"action\": \"cancel_and_hold\",\n  \"order_id\": \"{{ $('Webhook').item.json.body.order_id }}\",\n  \"reason\": \"{{ $('Webhook').item.json.body.captured }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [620, 304],
+      "id": "a1000000-0000-4000-8000-000000000006",
+      "name": "OMS: cancel + 3PL hold"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://webhook.site/158bd719-78cd-4ba7-a5cd-c395d30ac570",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"channel\": \"#ndr-escalations\",\n  \"text\": \"Manual follow-up needed for order {{ $('Webhook').item.json.body.order_id }}, disposition {{ $('Webhook').item.json.body.disposition }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [660, 512],
+      "id": "a1000000-0000-4000-8000-000000000007",
+      "name": "Slack: human queue"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://webhook.site/158bd719-78cd-4ba7-a5cd-c395d30ac570",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"order_id\": \"{{ $('Webhook').item.json.body.order_id }}\",\n  \"disposition\": \"{{ $('Webhook').item.json.body.disposition }}\",\n  \"language\": \"{{ $('Webhook').item.json.body.language }}\",\n  \"captured\": \"{{ $('Webhook').item.json.body.captured }}\",\n  \"source\": \"live-call\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [960, -16],
+      "id": "a1000000-0000-4000-8000-000000000008",
+      "name": "Log to CRM"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"ok\": true, \"disposition\": $('Webhook').item.json.body.disposition } }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [1200, -16],
+      "id": "a1000000-0000-4000-8000-000000000009",
+      "name": "Done"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Route on Disposition", "type": "main", "index": 0 }]]
+    },
+    "Route on Disposition": {
+      "main": [
+        [{ "node": "OMS: mark prepaid", "type": "main", "index": 0 }],
+        [{ "node": "3PL: reschedule", "type": "main", "index": 0 }],
+        [{ "node": "OMS: update address", "type": "main", "index": 0 }],
+        [{ "node": "OMS: cancel + 3PL hold", "type": "main", "index": 0 }],
+        [{ "node": "Slack: human queue", "type": "main", "index": 0 }]
+      ]
+    },
+    "OMS: mark prepaid": { "main": [[{ "node": "Log to CRM", "type": "main", "index": 0 }]] },
+    "3PL: reschedule": { "main": [[{ "node": "Log to CRM", "type": "main", "index": 0 }]] },
+    "OMS: update address": { "main": [[{ "node": "Log to CRM", "type": "main", "index": 0 }]] },
+    "OMS: cancel + 3PL hold": { "main": [[{ "node": "Log to CRM", "type": "main", "index": 0 }]] },
+    "Slack: human queue": { "main": [[{ "node": "Log to CRM", "type": "main", "index": 0 }]] },
+    "Log to CRM": { "main": [[{ "node": "Done", "type": "main", "index": 0 }]] }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

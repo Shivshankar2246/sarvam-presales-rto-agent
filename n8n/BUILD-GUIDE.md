@@ -1,12 +1,18 @@
 # n8n Agentic Backend — Step-by-Step Build Guide
 
-This is the **"B" (agentic workflow)** half of Project Sampark. It receives the delivery
-event, calls the voice agent, and **fans the result out** to the brand's systems
-(OMS · 3PL · WhatsApp · CRM · human queue).
+This is the **"B" (agentic workflow)** half of Project Sampark. It **fans a call outcome out**
+to the brand's systems (OMS · 3PL · CRM · human queue).
 
-> You'll build this by hand in the n8n editor. Every node, every field, every expression is
-> spelled out below. An importable reference copy lives at
-> `n8n/sampark-workflow.json` — use it only to cross-check your manual build.
+Sampark ships **two entry points into the same fan-out** — pick whichever the demo needs:
+
+| Workflow | Trigger | Voice call | Use |
+|---|---|---|---|
+| **Sampark — Trigger & Resolve** (`sampark-workflow.json`) | OMS/3PL fires an order event → n8n | n8n **places** the call (HTTP → `/trigger-call`) | Batch / outbound automation |
+| **Sampark — Live Resolve** (`sampark-live-resolve.json`) | The **live Call Console** POSTs the captured outcome | call already happened live | The A+B live demo — conversation drives the backend |
+
+> You'll build the first one by hand in the n8n editor (every node/field/expression is spelled out
+> below). The second is **import-only** — see *"Live Resolve"* at the end. Reference copies live at
+> `n8n/sampark-workflow.json` and `n8n/sampark-live-resolve.json`.
 
 **What you're building (the flow):**
 
@@ -24,7 +30,7 @@ Webhook (order event)
    → Respond to Webhook
 ```
 
-Downstream targets (OMS/3PL/WhatsApp/Slack/CRM) are **HTTP Request nodes pointed at mock URLs**
+Downstream targets (OMS/3PL/Slack/CRM) are **HTTP Request nodes pointed at mock URLs**
 for the PoC — swap them for the real integrations in production. Mock data is fine; the *flow*
 is the deliverable.
 
@@ -252,6 +258,51 @@ That's the full **event → reason → tool → downstream** loop the assignment
 ## What to say about this in the demo video (15 seconds)
 
 > "The voice bot is only half of it. Every call ends in a structured disposition that n8n fans
-> out automatically — here a COD order just converted to prepaid, so n8n flips the OMS to
-> prepaid and fires the WhatsApp payment link, with no human in the loop. That's the difference
-> between a chatbot and an enterprise system."
+> out automatically — here a COD order just converted to prepaid, so n8n flips the OMS to prepaid
+> and logs it to the CRM, with no human in the loop. That's the difference between a chatbot and
+> an enterprise system."
+
+---
+
+## Live Resolve — the A+B wiring (import-only, ~3 min)
+
+This is what fuses the voice bot and the backend into one system: the **live Call Console** pushes
+each captured outcome straight to n8n, which fans it out. No `curl`, no second voice call — the
+conversation itself drives the backend.
+
+```
+Live Call Console (browser)
+   → customer speaks → agent captures the outcome
+   → POST /webhook/sampark-live-resolve  { order_id, customer_name, language, disposition, captured }
+   → Route on Disposition (Switch on $json.body.disposition)
+        ├─ CONVERTED_PREPAID → OMS: mark prepaid
+        ├─ RESCHEDULED       → 3PL: reschedule
+        ├─ ADDRESS_FIXED     → OMS: update address
+        ├─ CANCELLED         → OMS: cancel + 3PL hold
+        └─ (fallback)        → Slack: human queue
+   → Log to CRM → Respond
+```
+
+**Steps**
+
+1. **Import** — n8n → *Workflows* → *Import from File* → `n8n/sampark-live-resolve.json`.
+2. **Point the mock URLs at your webhook.site** — the imported nodes use a shared mock URL; open
+   each HTTP node (OMS/3PL/Slack/CRM) and paste your own `https://webhook.site/...` if you want to
+   watch payloads land. (Optional — the flow runs either way.)
+3. **CORS is already set** — the Webhook node ships with **Allowed Origins (CORS) = `*`** so the
+   browser Console can POST to it cross-origin. Don't remove it, or the browser will block the call
+   with a CORS error.
+4. **Activate** the workflow (toggle top-right). The **production** URL becomes
+   `https://<your-n8n>/webhook/sampark-live-resolve`. The Console already points here
+   (`realtime/console/index.html` → `N8N_LIVE_URL`); override at runtime with `?n8n=<url>` if needed.
+5. **Test without the browser** (proves the backend in isolation):
+   ```bash
+   curl -X POST https://<your-n8n>/webhook/sampark-live-resolve \
+     -H "Content-Type: application/json" \
+     -d '{"order_id":"RVT-48217","customer_name":"Rakesh Kumar","language":"hi-IN","disposition":"CONVERTED_PREPAID","captured":"paise abhi nahi hai"}'
+   ```
+   Expect `{"ok":true,"disposition":"CONVERTED_PREPAID"}` and the OMS branch firing on webhook.site.
+
+> **Why a separate workflow (not the same one)?** The Trigger & Resolve flow *places* the call
+> itself; in the live flow the call already happened, so we hand n8n the finished disposition and it
+> only fans out. Two clean entry points, one shared downstream — both are real product modes.

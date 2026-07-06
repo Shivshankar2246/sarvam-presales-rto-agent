@@ -133,6 +133,12 @@ import { SmallWebRTCTransport } from "@pipecat-ai/small-webrtc-transport";
 
 const OFFER_URL = "http://localhost:7860/api/offer";
 
+// n8n live-resolve webhook: the moment the agent captures an outcome on the call, we push it
+// here and n8n fans it out to the delivery systems (OMS · 3PL · CRM · human queue). Swap in your
+// own n8n production URL. Override at runtime with ?n8n=<url> for local testing.
+const N8N_LIVE_URL = new URLSearchParams(location.search).get("n8n")
+  || "https://n8n.srv1137156.hstgr.cloud/webhook/sampark-live-resolve";
+
 const CLIENTS = {
   rakesh:  { id:"RVT-48217", name:"Rakesh Kumar",       first:"Rakesh",  language:"hi-IN", language_name:"Hindi",
              item:"Men's Kurta Set (Blue, L)", cod:1450, city:"Lucknow", why:"COD · first-time buyer · Tier-2 pincode", avatar:"🧑🏽" },
@@ -163,6 +169,8 @@ function classify(text){
 
 const $ = (id) => document.getElementById(id);
 let client=null, timer=null, secs=0, botLine=null, calling=false;
+let activeClient=null;               // the customer currently on the call
+const n8nSent = new Set();           // dispositions already pushed to n8n this call (fire once each)
 
 // --- render client cards ---
 const cardsEl = $("cards");
@@ -252,11 +260,42 @@ function addCapture(disp, text){
   let el = document.getElementById("cap-"+disp);
   if(!el){
     el = document.createElement("div"); el.className="cap-item"; el.id="cap-"+disp;
-    el.innerHTML = '<div class="cap-h"></div><div class="cap-d"></div><div class="cap-ok">✔ captured</div>';
+    el.innerHTML = '<div class="cap-h"></div><div class="cap-d"></div>'
+                 + '<div class="cap-ok">✔ captured</div><div class="cap-n8n" style="font-size:11px;color:#667085;margin-top:2px"></div>';
     list.appendChild(el);
   }
   el.querySelector(".cap-h").textContent = d.icon + " " + d.label;
   el.querySelector(".cap-d").textContent = d.detail;
+}
+
+// Push the captured outcome to n8n once per disposition — n8n routes it and updates the
+// delivery systems. Fire-and-forget so it never blocks the live call.
+async function pushToN8n(disp, text){
+  if (!activeClient || n8nSent.has(disp)) return;
+  n8nSent.add(disp);
+  const el = document.getElementById("cap-"+disp);
+  const note = el && el.querySelector(".cap-n8n");
+  if (note) note.textContent = "→ sending to n8n…";
+  try {
+    const res = await fetch(N8N_LIVE_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        order_id: activeClient.id,
+        customer_name: activeClient.name,
+        language: activeClient.language,
+        disposition: disp,
+        captured: text || "",
+        source: "live-call",
+      }),
+    });
+    if (note) note.textContent = res.ok ? "→ n8n: delivery systems updated ✓"
+                                        : "→ n8n error (HTTP " + res.status + ")";
+  } catch(err){
+    n8nSent.delete(disp);   // allow a retry on the next matching utterance
+    if (note) note.textContent = "→ n8n unreachable (retrying on next line)";
+    console.error("n8n push failed:", err);
+  }
 }
 
 function buildClient(){
@@ -272,7 +311,7 @@ function buildClient(){
         if (d?.final && d.text?.trim()){
           addBubble("you", d.text);
           const disp = classify(d.text);
-          if (disp){ setIntent(disp); addCapture(disp, d.text); }
+          if (disp){ setIntent(disp); addCapture(disp, d.text); pushToN8n(disp, d.text); }
         }
       },
       onBotStartedSpeaking: () => { botLine = null; },
@@ -294,6 +333,8 @@ function buildClient(){
 
 async function startCall(key){
   const c = CLIENTS[key];
+  activeClient = c;          // remember who's on the call so pushToN8n can tag the outcome
+  n8nSent.clear();           // fresh call — allow each disposition to fire to n8n once
   const lang = c.language;   // language is set by the bot (REALTIME_LANG); this is just for requestData
   showCallView(c);
   setLive(false, "connecting…");
@@ -319,7 +360,7 @@ function toggleMute(){
 async function endCall(){ if(client) await client.disconnect(); resetPanel(); }
 
 function resetPanel(){
-  stopTimer(); calling=false; botLine=null; client=null;
+  stopTimer(); calling=false; botLine=null; client=null; activeClient=null; n8nSent.clear();
   document.querySelectorAll(".callbtn").forEach(b => b.disabled=false);
   $("panel").innerHTML = `<div class="empty" id="empty"><div class="big">📞</div>
     <div>Select a customer on the left and press <b>Call now</b><br>to start a live conversation.</div></div>`;
