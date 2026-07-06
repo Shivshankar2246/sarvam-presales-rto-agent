@@ -8,7 +8,7 @@
 
 ## 1. The customer (pre-sales scenario)
 
-**"Rivaayat"** — a fast-growing D2C ethnic-wear brand (fictional, representative of a real segment).
+**"Zivaa"** — a fast-growing D2C ethnic-wear brand (fictional, representative of a real segment).
 
 | Attribute | Value |
 |---|---|
@@ -91,7 +91,7 @@ reasons in-language, a tool executes, and a downstream system is updated.
 
 ## 4. Agent contract — system goal + tools
 
-**System goal (`sarvam-30b`):** "You are Meera, calling on behalf of Rivaayat about the customer's
+**System goal (`sarvam-30b`):** "You are Meera, calling on behalf of Zivaa about the customer's
 order that is out for delivery. Speak ONLY in the customer's language. Your single job is to make
 this delivery succeed. In order: confirm they'll be available; confirm the address; confirm they
 have the COD amount ready OR offer to switch to UPI prepaid; if they want to cancel, capture why.
@@ -121,7 +121,7 @@ different RTO cause so the demo shows range.
 
 ### 5a. Hindi — COD-ready → prepaid conversion (the money shot)
 ```
-Meera (TTS hi-IN): नमस्ते, मैं रिवायत से मीरा बोल रही हूँ। आपका ऑर्डर आज डिलीवरी के लिए निकला है —
+Meera (TTS hi-IN): नमस्ते, मैं ज़िवा से मीरा बोल रही हूँ। आपका ऑर्डर आज डिलीवरी के लिए निकला है —
                    ₹1,450 कैश ऑन डिलीवरी। क्या आप घर पर रहेंगे?
 Customer (STT):    हाँ रहूँगा, लेकिन अभी कैश नहीं है घर पे।
 Meera:             कोई बात नहीं! मैं आपको अभी एक UPI लिंक WhatsApp पर भेज देती हूँ — आप GPay या
@@ -132,7 +132,7 @@ Customer:          हाँ भेज दो।
 
 ### 5b. Tamil — not available → reschedule
 ```
-Meera (TTS ta-IN): வணக்கம், நான் ரிவாயத்-ல் இருந்து மீரா பேசுறேன். உங்க ஆர்டர் இன்னைக்கு டெலிவரிக்கு
+Meera (TTS ta-IN): வணக்கம், நான் ஜிவா-ல் இருந்து மீரா பேசுறேன். உங்க ஆர்டர் இன்னைக்கு டெலிவரிக்கு
                    வந்துருக்கு. நீங்க வீட்ல இருப்பீங்களா?
 Customer (STT):    இல்லை, நான் இன்னைக்கு ஊருக்கு போயிட்டேன். நாளைக்கு வரேன்.
 Meera:             பரவாயில்லை! நாளைக்கு மதியம் டெலிவரி பண்ணட்டுமா?
@@ -142,7 +142,7 @@ Customer:          சரி, நாளைக்கு மதியம் ஓக
 
 ### 5c. Hinglish (code-mix) — wrong address → correction
 ```
-Meera (TTS, Hinglish): Hello, main Rivaayat se Meera bol rahi hoon. Aapka order out for delivery
+Meera (TTS, Hinglish): Hello, main Zivaa se Meera bol rahi hoon. Aapka order out for delivery
                        hai, but courier bol raha hai address mein gali ka naam missing hai. Aap
                        confirm kar denge?
 Customer (STT):        Haan, ground floor likha hai but actually second floor hai, aur landmark

@@ -219,7 +219,7 @@ if "handled" not in st.session_state:
 # ----------------------------- header + KPIs -----------------------------
 backend = "Live · Sarvam AI" if not settings.use_mock else "Demo mode (add SARVAM_API_KEY for live voice)"
 st.markdown(
-    f'<div class="hero"><h1>📦 Rivaayat · Delivery Rescue Console</h1>'
+    f'<div class="hero"><h1>📦 Zivaa · Delivery Rescue Console</h1>'
     f'<p>An AI voice agent that calls Cash-on-Delivery customers in their own language and '
     f'saves the order before it turns into a costly return.</p>'
     f'<div class="pw">Powered by Sampark on Sarvam AI · Speech (Saaras) · Reasoning (sarvam-30b) · Voice (Bulbul) — {backend}</div></div>',

@@ -32,7 +32,7 @@ The hard numbers:
 - **Tier 2/3 cities drove ~65% of festive orders (Tier 3 alone ~46%)** *(Fynd Festive Report
   2025)* — i.e. the RTO problem is growing fastest in exactly the low-English, high-COD cohort.
 
-**For a representative brand — "Rivaayat", 1.2 lakh orders/month, 64% COD, apparel:**
+**For a representative brand — "Zivaa", 1.2 lakh orders/month, 64% COD, apparel:**
 
 | | |
 |---|---|

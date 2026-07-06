@@ -58,9 +58,9 @@ _VOICE = {"en-IN": "anushka", "hi-IN": "anushka", "ta-IN": "vidya"}
 
 # Fixed opening line, spoken straight through TTS (bypasses the LLM so the greeting is guaranteed).
 _GREETING = {
-    "hi-IN": "नमस्ते! मैं रिवायत से मीरा बोल रही हूँ। आपका ऑर्डर आज डिलीवरी के लिए निकला है — क्या आप घर पर उपलब्ध रहेंगे?",
-    "ta-IN": "வணக்கம்! நான் ரிவாயத்-ல் இருந்து மீரா பேசுறேன். உங்க ஆர்டர் இன்னைக்கு டெலிவரிக்கு வந்துருக்கு — நீங்க வீட்ல இருப்பீங்களா?",
-    "en-IN": "Hello! This is Meera from Rivaayat about your order that's out for delivery today. Will you be available to receive it?",
+    "hi-IN": "नमस्ते! मैं ज़िवा से मीरा बोल रही हूँ। आपका ऑर्डर आज डिलीवरी के लिए निकला है — क्या आप घर पर उपलब्ध रहेंगे?",
+    "ta-IN": "வணக்கம்! நான் ஜிவா-ல் இருந்து மீரா பேசுறேன். உங்க ஆர்டர் இன்னைக்கு டெலிவரிக்கு வந்துருக்கு — நீங்க வீட்ல இருப்பீங்களா?",
+    "en-IN": "Hello! This is Meera from Zivaa about your order that's out for delivery today. Will you be available to receive it?",
 }
 
 
@@ -71,7 +71,7 @@ def build_system_prompt(ctx: dict) -> str:
     lang = ctx.get("language") or DEFAULT_LANG
     cod = f" worth Rs {amt}, Cash-on-Delivery" if amt else ", Cash-on-Delivery"
     return (
-        f"You are Meera, a warm, concise delivery-confirmation agent for Rivaayat, a D2C "
+        f"You are Meera, a warm, concise delivery-confirmation agent for Zivaa, a D2C "
         f"clothing brand. You are calling {name}, whose order — {item}{cod} — is out for "
         f"delivery today. Your ONE job is to make sure it gets delivered instead of coming "
         f"back as a return.\n\n"

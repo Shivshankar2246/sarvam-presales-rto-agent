@@ -20,9 +20,9 @@ TOOL_NAMES = {t["function"]["name"] for t in TOOLS}
 # Fixed, guaranteed-in-language opening line (production voice agents use a scripted
 # greeting; it also guarantees the call opens in the right language and saves an API call).
 GREETINGS = {
-    "hi-IN": "नमस्ते {name} जी, मैं रिवायत से मीरा बोल रही हूँ। आपका ऑर्डर आज डिलीवरी के लिए निकला है — क्या आप डिलीवरी के लिए उपलब्ध रहेंगे?",
-    "ta-IN": "வணக்கம் {name}, நான் ரிவாயத்-ல் இருந்து மீரா பேசுறேன். உங்க ஆர்டர் இன்னைக்கு டெலிவரிக்கு வந்துருக்கு — நீங்க வீட்ல இருப்பீங்களா?",
-    "en-IN": "Hello {name}, this is Meera from Rivaayat. Your order is out for delivery today — will you be available to receive it?",
+    "hi-IN": "नमस्ते {name} जी, मैं ज़िवा से मीरा बोल रही हूँ। आपका ऑर्डर आज डिलीवरी के लिए निकला है — क्या आप डिलीवरी के लिए उपलब्ध रहेंगे?",
+    "ta-IN": "வணக்கம் {name}, நான் ஜிவா-ல் இருந்து மீரா பேசுறேன். உங்க ஆர்டர் இன்னைக்கு டெலிவரிக்கு வந்துருக்கு — நீங்க வீட்ல இருப்பீங்களா?",
+    "en-IN": "Hello {name}, this is Meera from Zivaa. Your order is out for delivery today — will you be available to receive it?",
 }
 
 
@@ -195,7 +195,7 @@ class RTOAgent:
         o = self.order
         return (
             "You are Meera, an outbound delivery-confirmation agent calling on behalf of "
-            "Rivaayat, a D2C ethnic-wear brand.\n\n"
+            "Zivaa, a D2C ethnic-wear brand.\n\n"
             "CALL CONTEXT (never invent details — use only these):\n"
             f"- order_id={o['order_id']}\n"
             f"- Customer: {o['customer_name']}\n"

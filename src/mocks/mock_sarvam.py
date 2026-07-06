@@ -50,9 +50,9 @@ class _Resp:
 
 # --- Canned, localized copy for the three scripted scenarios -----------------------
 GREETING = {
-    "hi-IN": "नमस्ते, मैं रिवायत से मीरा बोल रही हूँ। आपका ऑर्डर आज डिलीवरी के लिए निकला है। क्या आप घर पर रहेंगे?",
-    "ta-IN": "வணக்கம், நான் ரிவாயத்-ல் இருந்து மீரா பேசுறேன். உங்க ஆர்டர் இன்னைக்கு டெலிவரிக்கு வந்துருக்கு. நீங்க வீட்ல இருப்பீங்களா?",
-    "en-IN": "Hi, this is Meera from Rivaayat. Your order is out for delivery today. Will you be home to receive it?",
+    "hi-IN": "नमस्ते, मैं ज़िवा से मीरा बोल रही हूँ। आपका ऑर्डर आज डिलीवरी के लिए निकला है। क्या आप घर पर रहेंगे?",
+    "ta-IN": "வணக்கம், நான் ஜிவா-ல் இருந்து மீரா பேசுறேன். உங்க ஆர்டர் இன்னைக்கு டெலிவரிக்கு வந்துருக்கு. நீங்க வீட்ல இருப்பீங்களா?",
+    "en-IN": "Hi, this is Meera from Zivaa. Your order is out for delivery today. Will you be home to receive it?",
 }
 
 TOOL_REPLY = {
