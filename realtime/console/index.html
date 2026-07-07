@@ -131,7 +131,9 @@
 import { PipecatClient, RTVIEvent } from "@pipecat-ai/client-js";
 import { SmallWebRTCTransport } from "@pipecat-ai/small-webrtc-transport";
 
-const OFFER_URL = "http://localhost:7860/api/offer";
+// Bot endpoint resolves to whatever host served this page — so it works both on
+// localhost AND when opened from another machine on the LAN (http://<mac-ip>:5500).
+const OFFER_URL = `http://${location.hostname}:7860/api/offer`;
 
 // n8n live-resolve webhook: the moment the agent captures an outcome on the call, we push it
 // here and n8n fans it out to the delivery systems (OMS · 3PL · CRM · human queue). Swap in your
