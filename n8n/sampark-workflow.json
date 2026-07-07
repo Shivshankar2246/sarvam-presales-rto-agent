@@ -170,7 +170,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://webhook.site/158bd719-78cd-4ba7-a5cd-c395d30ac570",
+        "url": "https://webhook.site/2246f8a9-74c5-4474-b081-5873a416c8db",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n    \"action\": \"reschedule\",                                                   \n    \"order_id\": \"{{ $('Call Voice Agent').item.json.order_id }}\",\n    \"slot\": \"{{ $('Call Voice Agent').item.json.tools_called[0].args.preferred_slot }}\"\n  }",
@@ -188,7 +188,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://webhook.site/158bd719-78cd-4ba7-a5cd-c395d30ac570",
+        "url": "https://webhook.site/2246f8a9-74c5-4474-b081-5873a416c8db",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n    \"action\": \"update_address\",\n    \"order_id\": \"{{ $('Call Voice Agent').item.json.order_id }}\",\n    \"address\": \"{{ $('Call Voice Agent').item.json.tools_called[0].args.corrected_address }}\",\n    \"landmark\": \"{{ $('Call Voice Agent').item.json.tools_called[0].args.landmark }}\"\n  }",
@@ -206,7 +206,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://webhook.site/158bd719-78cd-4ba7-a5cd-c395d30ac570",
+        "url": "https://webhook.site/2246f8a9-74c5-4474-b081-5873a416c8db",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n    \"action\": \"cancel_and_hold\",\n    \"order_id\": \"{{ $('Call Voice Agent').item.json.order_id }}\",\n    \"reason\": \"{{ $('Call Voice Agent').item.json.tools_called[0].args.reason }}\"\n  }",
@@ -224,7 +224,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://webhook.site/158bd719-78cd-4ba7-a5cd-c395d30ac570",
+        "url": "https://webhook.site/2246f8a9-74c5-4474-b081-5873a416c8db",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n    \"channel\": \"#ndr-escalations\",\n    \"text\": \"Manual follow-up needed for order {{ $('Call Voice Agent').item.json.order_id }}, disposition {{\n  $('Call Voice Agent').item.json.disposition }}\"\n  }",
@@ -242,7 +242,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://webhook.site/158bd719-78cd-4ba7-a5cd-c395d30ac570",
+        "url": "https://webhook.site/2246f8a9-74c5-4474-b081-5873a416c8db",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n    \"order_id\": \"{{ $('Call Voice Agent').item.json.order_id }}\",\n    \"disposition\": \"{{ $('Call Voice Agent').item.json.disposition }}\",\n    \"language\": \"{{ $('Call Voice Agent').item.json.language }}\"\n  }",
@@ -275,7 +275,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://webhook.site/158bd719-78cd-4ba7-a5cd-c395d30ac570",
+        "url": "https://webhook.site/2246f8a9-74c5-4474-b081-5873a416c8db",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"action\": \"mark_prepaid\",\n  \"order_id\": \"{{ $('Call Voice Agent').item.json.order_id }}\"\n}\n",
